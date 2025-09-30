@@ -14,28 +14,28 @@ const Game = () => {
         physics: {
           default: "arcade",
           arcade: {
-            gravity: { y: 300 },
+            gravity: { y: 1000 },
             debug: false,
           },
         },
         scene: {
           preload: function () {
-            this.load.spritesheet("monster_idle", "/monster_idle.png", {
-              frameWidth: 32,
-              frameHeight: 32,
+            this.load.spritesheet("Idle", "/Idle.png", {
+              frameWidth: 48,
+              frameHeight: 64,
             });
-            this.load.spritesheet("monster_run", "/monster_run.png", {
-              frameWidth: 32,
-              frameHeight: 32,
+            this.load.spritesheet("Run", "/Walk.png", {
+              frameWidth: 48,
+              frameHeight: 64,
             });
-            this.load.spritesheet("monster_jump", "/monster_jump.png", {
-              frameWidth: 32,
-              frameHeight: 32,
+            this.load.spritesheet("Jump", "/Jump.png", {
+              frameWidth: 48,
+              frameHeight: 64,
             });
           },
           create: function () {
             // Set background color to remove green line
-            this.cameras.main.setBackgroundColor('#87CEEB');
+            this.cameras.main.setBackgroundColor('#87CEEB'); 
 
             // Create invisible ground platform
             this.platforms = this.physics.add.staticGroup();
@@ -44,8 +44,8 @@ const Game = () => {
             this.platforms.add(ground);
 
             // Create player
-            this.player = this.physics.add.sprite(100, window.innerHeight - 200, "monster_idle");
-            this.player.setScale(3);
+            this.player = this.physics.add.sprite(100, window.innerHeight - 200, "Idle");
+            this.player.setScale(2);
             this.player.setCollideWorldBounds(true);
             this.player.body.setSize(20, 28, true);
 
@@ -55,22 +55,22 @@ const Game = () => {
             // Create animations with proper frame counts
             this.anims.create({
               key: "idle",
-              frames: this.anims.generateFrameNumbers("monster_idle", { start: 0, end: 3 }),
-              frameRate: 8,
-              repeat: -1,
-            });
-
-            this.anims.create({
-              key: "run",
-              frames: this.anims.generateFrameNumbers("monster_run", { start: 0, end: 5 }),
+              frames: this.anims.generateFrameNumbers("Idle", { start: 0, end: 7 }),
               frameRate: 10,
               repeat: -1,
             });
 
             this.anims.create({
+              key: "run",
+              frames: this.anims.generateFrameNumbers("Run", { start: 0, end: 7 }),
+              frameRate: 20,
+              repeat: -1,
+            });
+
+            this.anims.create({
               key: "jump",
-              frames: this.anims.generateFrameNumbers("monster_jump", { start: 0, end: 7 }),
-              frameRate: 12,
+              frames: this.anims.generateFrameNumbers("Jump", { start: 0, end: 7 }),
+              frameRate: 20,
               repeat: 0,
             });
 
@@ -83,7 +83,7 @@ const Game = () => {
             this.isOnGround = false;
           },
           update: function () {
-            const speed = 200;
+            const speed = 300;
             const jumpPower = -400;
 
             // Check if player is on ground
