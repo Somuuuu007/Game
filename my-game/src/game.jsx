@@ -37,6 +37,12 @@ const Game = () => {
               frameHeight: 64,
             });
 
+            // Load door sprites
+            for (let i = 0; i <= 40; i++) {
+              const frameNum = i.toString().padStart(2, '0');
+              this.load.image(`door_${i}`, `/Door/sprite_${frameNum}.png`);
+            }
+
             // No external tileset needed - using simple rectangles
           },
           create: function () {
@@ -76,12 +82,21 @@ const Game = () => {
             this.player.setCollideWorldBounds(true);
             this.player.body.setSize(20, 28, true);
 
+            // Create door at the end of level
+            this.door = this.add.sprite(2200, window.innerHeight - 100, "door_0");
+            this.door.setScale(0.3);
+            this.door.setOrigin(0.5, 1); // Set origin to bottom center
+            this.door.play("door_closed");
+
             // Camera follows player
             this.cameras.main.setBounds(0, 0, 2400, window.innerHeight);
             this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
 
             // Player collides with platforms
             this.physics.add.collider(this.player, this.platforms);
+
+            // Track door state
+            this.doorOpen = false;
 
             // Create animations with proper frame counts
             this.anims.create({
@@ -112,6 +127,26 @@ const Game = () => {
               repeat: 0,
             });
 
+            // Door animations using individual sprite files
+            this.anims.create({
+              key: "door_closed",
+              frames: [{ key: "door_0" }],
+              frameRate: 10,
+            });
+
+            this.anims.create({
+              key: "door_opening",
+              frames: Array.from({ length: 41 }, (_, i) => ({ key: `door_${i}` })),
+              frameRate: 20,
+              repeat: 0,
+            });
+
+            this.anims.create({
+              key: "door_open",
+              frames: [{ key: "door_40" }],
+              frameRate: 10,
+            });
+
             // Start with idle animation
             this.player.play("idle");
             this.cursors = this.input.keyboard.createCursorKeys();
@@ -122,7 +157,7 @@ const Game = () => {
           },
           update: function () {
             const speed = 300;
-            const jumpPower = -400;
+            const jumpPower = -500;
 
             // Check if player is on ground
             this.isOnGround = this.player.body.touching.down || this.player.body.blocked.down;
@@ -159,6 +194,27 @@ const Game = () => {
             // If in air and not already playing jump animation
             if (!this.isOnGround && this.player.anims.currentAnim.key !== "jump") {
               this.player.play("jump");
+            }
+
+            // Check if player is near door
+            const distanceToDoor = Phaser.Math.Distance.Between(
+              this.player.x, this.player.y,
+              this.door.x, this.door.y
+            );
+
+            // Open door when player is near
+            if (distanceToDoor < 100 && !this.doorOpen) {
+              this.doorOpen = true;
+              this.door.play("door_opening");
+              this.door.once("animationcomplete", () => {
+                this.door.play("door_open");
+              });
+            }
+
+            // Enter door to complete level
+            if (distanceToDoor < 50 && this.doorOpen) {
+              // Level complete - can trigger next level here
+              console.log("Level Complete!");
             }
           },
         },
