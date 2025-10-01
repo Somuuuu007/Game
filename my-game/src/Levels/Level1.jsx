@@ -22,13 +22,33 @@ class Level1Scene extends BaseScene {
   create() {
     super.create();
 
-    // Add rock above the ground platform
-    this.rock = this.add.image(window.innerWidth / 3, window.innerHeight - 95, "rock");
+    // Add rock above the ground platform with physics
+    this.rock = this.physics.add.sprite(window.innerWidth / 3, window.innerHeight - 95, "rock");
     this.rock.setScale(2);
     this.rock.setDepth(5);
+    this.rock.body.setAllowGravity(false);
+    this.rock.body.setImmovable(true);
+
+    // Add overlap detection between player and rock
+    this.physics.add.overlap(this.player, this.rock, this.checkRockCollision, null, this);
 
     // Track if rock should follow player
     this.rockActivated = false;
+  }
+
+  checkRockCollision(player, rock) {
+    // Only kill player if they are moving left (backing into the rock)
+    if (player.body.velocity.x < 0 && !this.levelComplete) {
+      this.levelComplete = true;
+      player.play("death");
+      player.body.setVelocity(0, 0);
+      player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
+    }
   }
 
   update() {
