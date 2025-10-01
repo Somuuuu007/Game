@@ -217,7 +217,7 @@ const Game = () => {
             );
 
             // Open door when player is near
-            if (distanceToDoor < 100 && !this.doorOpen) {
+            if (distanceToDoor < 200 && !this.doorOpen) {
               this.doorOpen = true;
               this.door.play("door_opening");
               this.door.once("animationcomplete", () => {
@@ -229,13 +229,12 @@ const Game = () => {
             if (distanceToDoor < 50 && this.doorOpen && !this.levelComplete) {
               this.levelComplete = true;
 
-              // Stop player movement
-              this.player.setVelocityX(0);
-              this.player.setVelocityY(0);
-
-              // Position player at door center and play walk up animation
-              this.player.x = this.door.x;
+              // Disable player controls
+              this.player.body.setVelocity(0, 0);
+              this.player.body.setAllowGravity(false);
               this.player.setFlipX(false);
+
+              // Play walk up animation
               this.player.play("walkup");
 
               // When walk up animation completes, fade out and restart level
