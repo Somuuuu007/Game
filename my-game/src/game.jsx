@@ -32,6 +32,10 @@ const Game = () => {
               frameWidth: 48,
               frameHeight: 64,
             });
+            this.load.spritesheet("Death", "/Death.png", {
+              frameWidth: 48,
+              frameHeight: 64,
+            });
 
             // No external tileset needed - using simple rectangles
           },
@@ -96,8 +100,15 @@ const Game = () => {
 
             this.anims.create({
               key: "jump",
-              frames: this.anims.generateFrameNumbers("Jump", { start: 0, end: 7 }),
-              frameRate: 12,
+              frames: this.anims.generateFrameNumbers("Jump", { start: 0, end: 1 }),
+              frameRate: 5,
+              repeat: 0,
+            });
+
+            this.anims.create({
+              key: "death",
+              frames: this.anims.generateFrameNumbers("Death", { start: 0, end: 7 }),
+              frameRate: 10,
               repeat: 0,
             });
 
@@ -111,7 +122,7 @@ const Game = () => {
           },
           update: function () {
             const speed = 300;
-            const jumpPower = -500;
+            const jumpPower = -400;
 
             // Check if player is on ground
             this.isOnGround = this.player.body.touching.down || this.player.body.blocked.down;
