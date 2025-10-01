@@ -166,7 +166,7 @@ const Game = () => {
             }
 
             const speed = 300;
-            const jumpPower = -500;
+            const jumpPower = -400;
 
             // Check if player is on ground
             this.isOnGround = this.player.body.touching.down || this.player.body.blocked.down;
@@ -194,8 +194,8 @@ const Game = () => {
               }
             }
 
-            // Jumping
-            if ((this.spaceKey.isDown || this.cursors.up.isDown) && this.isOnGround) {
+            // Jumping - only on key press, not hold
+            if ((Phaser.Input.Keyboard.JustDown(this.spaceKey) || Phaser.Input.Keyboard.JustDown(this.cursors.up)) && this.isOnGround) {
               this.player.setVelocityY(jumpPower);
               this.player.play("jump");
             }
