@@ -103,6 +103,11 @@ export class BaseScene extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
+    // Add WASD keys for dual controls
+    this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+    this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+    this.wKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+
     // Track if player is on ground
     this.isOnGround = false;
   }
@@ -180,15 +185,15 @@ export class BaseScene extends Phaser.Scene {
 
     this.isOnGround = this.player.body.touching.down || this.player.body.blocked.down;
 
-    // Horizontal movement
-    if (this.cursors.left.isDown) {
+    // Horizontal movement - arrow keys or WASD
+    if (this.cursors.left.isDown || this.aKey.isDown) {
       this.player.setVelocityX(-speed);
       this.player.setFlipX(true);
 
       if (this.isOnGround && this.player.anims.currentAnim.key !== "run") {
         this.player.play("run");
       }
-    } else if (this.cursors.right.isDown) {
+    } else if (this.cursors.right.isDown || this.dKey.isDown) {
       this.player.setVelocityX(speed);
       this.player.setFlipX(false);
 
@@ -203,8 +208,8 @@ export class BaseScene extends Phaser.Scene {
       }
     }
 
-    // Jumping
-    if ((Phaser.Input.Keyboard.JustDown(this.spaceKey) || Phaser.Input.Keyboard.JustDown(this.cursors.up)) && this.isOnGround) {
+    // Jumping - arrow keys, space, or W key
+    if ((Phaser.Input.Keyboard.JustDown(this.spaceKey) || Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.wKey)) && this.isOnGround) {
       this.player.setVelocityY(jumpPower);
       this.player.play("jump");
     }
