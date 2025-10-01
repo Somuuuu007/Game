@@ -1,9 +1,9 @@
-import Level1 from './Levels/Level1';
+import Game from './Levels/Game';
 
 function App() {
   return (
     <div>
-      <Level1 />
+      <Game />
     </div>
   )
 }

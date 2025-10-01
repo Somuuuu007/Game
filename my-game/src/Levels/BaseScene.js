@@ -38,6 +38,9 @@ export class BaseScene extends Phaser.Scene {
   }
 
   create() {
+    // Save current level to localStorage
+    localStorage.setItem('currentLevel', this.scene.key);
+
     // Get level width (can be overridden in child class)
     const levelWidth = this.levelWidth || 2400;
 

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import Phaser from "phaser";
 import { BaseScene } from "./BaseScene";
 
-class Level1Scene extends BaseScene {
+export class Level1Scene extends BaseScene {
   constructor() {
     super("Level1");
     this.backgroundKey = "background1";
@@ -77,9 +77,8 @@ class Level1Scene extends BaseScene {
   }
 
   onLevelComplete() {
-    // Go to next level (for now, restart)
-    this.scene.restart();
-    // Later: this.scene.start("Level2");
+    // Go to Level 2
+    this.scene.start("Level2");
   }
 }
 
