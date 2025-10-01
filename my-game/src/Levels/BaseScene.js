@@ -38,17 +38,20 @@ export class BaseScene extends Phaser.Scene {
   }
 
   create() {
-    // Add background if specified - covers entire game world (2400px width)
+    // Get level width (can be overridden in child class)
+    const levelWidth = this.levelWidth || 2400;
+
+    // Add background if specified - covers entire game world
     if (this.backgroundKey) {
-      const bg = this.add.image(1200, window.innerHeight / 2, this.backgroundKey);
-      bg.setDisplaySize(2400, window.innerHeight);
+      const bg = this.add.image(levelWidth / 2, window.innerHeight / 2, this.backgroundKey);
+      bg.setDisplaySize(levelWidth, window.innerHeight);
       bg.setScrollFactor(1); // Background scrolls with camera
     } else {
       this.cameras.main.setBackgroundColor('#1a1a1a');
     }
 
     // Set world bounds
-    this.physics.world.setBounds(0, 0, 2400, window.innerHeight);
+    this.physics.world.setBounds(0, 0, levelWidth, window.innerHeight);
 
     // Create platforms group
     this.platforms = this.physics.add.staticGroup();
@@ -63,7 +66,7 @@ export class BaseScene extends Phaser.Scene {
     };
 
     // Ground platform - can be overridden by setting groundPlatformWidth/Height in child class
-    const groundWidth = this.groundPlatformWidth || 2400;
+    const groundWidth = this.groundPlatformWidth || levelWidth;
     const groundHeight = this.groundPlatformHeight || 150;
     this.createPlatform(groundWidth / 2, window.innerHeight - groundHeight / 2, groundWidth, groundHeight);
 
@@ -78,14 +81,16 @@ export class BaseScene extends Phaser.Scene {
     this.player.setDepth(10);
 
     // Create door at the end of level
-    this.door = this.add.sprite(2200, window.innerHeight - 150, "door_17");
+    const doorX = this.doorX || levelWidth - 200;
+    const doorY = window.innerHeight - (this.groundPlatformHeight || 150);
+    this.door = this.add.sprite(doorX, doorY, "door_17");
     this.door.setScale(0.3);
     this.door.setOrigin(0.5, 1);
     this.door.setDepth(0);
     this.door.play("door_closed");
 
     // Camera follows player
-    this.cameras.main.setBounds(0, 0, 2400, window.innerHeight);
+    this.cameras.main.setBounds(0, 0, levelWidth, window.innerHeight);
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
 
     // Player collides with platforms

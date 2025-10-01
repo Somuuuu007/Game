@@ -8,18 +8,13 @@ class Level1Scene extends BaseScene {
     this.backgroundKey = "background1";
     this.groundPlatformHeight = 80; // Smaller height for this level
     this.platformColor = 0x000000; // Dark blue color for this level
+    this.levelWidth = window.innerWidth; // Single screen width for this level
+    this.doorX = window.innerWidth - 150; // Door near the end
   }
 
   loadLevelAssets() {
     // Load Level 1 specific background - using the complete image
     this.load.image("background1", "/background 1/orig_big.png");
-  }
-
-  create() {
-    super.create();
-
-    // Adjust door position for this level's ground height
-    this.door.y = window.innerHeight - 80;
   }
 
   createPlatforms() {
