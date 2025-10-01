@@ -6,21 +6,23 @@ class Level1Scene extends BaseScene {
   constructor() {
     super("Level1");
     this.backgroundKey = "background1";
+    this.groundPlatformHeight = 50; // Smaller height for this level
   }
 
   loadLevelAssets() {
-    // Load Level 1 specific background
-    this.load.image("background1", "/background.png");
+    // Load Level 1 specific background - using the complete image
+    this.load.image("background1", "/background 1/orig_big.png");
+  }
+
+  create() {
+    super.create();
+
+    // Adjust door position for this level's ground height
+    this.door.y = window.innerHeight - 50;
   }
 
   createPlatforms() {
     // Add Level 1 specific platforms here
-    // Customize these for your level design
-    this.createPlatform(400, window.innerHeight - 200, 150, 20);
-    this.createPlatform(700, window.innerHeight - 300, 150, 20);
-    this.createPlatform(1000, window.innerHeight - 400, 150, 20);
-    this.createPlatform(1400, window.innerHeight - 350, 150, 20);
-    this.createPlatform(1800, window.innerHeight - 250, 150, 20);
   }
 
   onLevelComplete() {

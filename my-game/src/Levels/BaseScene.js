@@ -38,10 +38,11 @@ export class BaseScene extends Phaser.Scene {
   }
 
   create() {
-    // Add background if specified
+    // Add background if specified - covers entire game world (2400px width)
     if (this.backgroundKey) {
-      this.add.image(window.innerWidth / 2, window.innerHeight / 2, this.backgroundKey)
-        .setDisplaySize(window.innerWidth, window.innerHeight);
+      const bg = this.add.image(1200, window.innerHeight / 2, this.backgroundKey);
+      bg.setDisplaySize(2400, window.innerHeight);
+      bg.setScrollFactor(1); // Background scrolls with camera
     } else {
       this.cameras.main.setBackgroundColor('#1a1a1a');
     }
@@ -60,8 +61,10 @@ export class BaseScene extends Phaser.Scene {
       return platform;
     };
 
-    // Ground platform
-    this.createPlatform(1200, window.innerHeight - 75, 2400, 150);
+    // Ground platform - can be overridden by setting groundPlatformWidth/Height in child class
+    const groundWidth = this.groundPlatformWidth || 2400;
+    const groundHeight = this.groundPlatformHeight || 150;
+    this.createPlatform(groundWidth / 2, window.innerHeight - groundHeight / 2, groundWidth, groundHeight);
 
     // Create level-specific platforms
     this.createPlatforms();
