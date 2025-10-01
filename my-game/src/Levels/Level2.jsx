@@ -10,8 +10,8 @@ export class Level2Scene extends BaseScene {
     this.groundPlatformWidth = 200; // Much taller ground platform
     this.platformColor = 0x212121;
     this.levelWidth = window.innerWidth; // Single screen width like Level 1
-    this.doorX = window.innerWidth - 150; // Door near the end
-    
+    this.doorX = 1380; // Door on the last step
+
   }
 
   loadLevelAssets() {
@@ -24,6 +24,10 @@ export class Level2Scene extends BaseScene {
 
     // Adjust player spawn position for the taller ground
     this.player.y = window.innerHeight - 700;
+
+    // Make door visible first - position it on screen
+    this.door.x = 1300;
+    this.door.y = window.innerHeight - 102;
   }
 
   createPlatforms() {
