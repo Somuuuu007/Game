@@ -68,17 +68,7 @@ const Game = () => {
             };
 
             // Ground platform - taller base
-            createPlatform(1200, window.innerHeight - 50, 2400, 100);
-
-            // Floating platforms - simple level layout
-            createPlatform(400, window.innerHeight - 120, 150, 20);
-            createPlatform(450, window.innerHeight - 200, 120, 20);
-            createPlatform(700, window.innerHeight - 160, 100, 20);
-            createPlatform(950, window.innerHeight - 280, 140, 20);
-            createPlatform(1250, window.innerHeight - 220, 130, 20);
-            createPlatform(1500, window.innerHeight - 300, 110, 20);
-            createPlatform(1800, window.innerHeight - 240, 150, 20);
-            createPlatform(2100, window.innerHeight - 180, 120, 20);
+            createPlatform(1200, window.innerHeight - 75, 2400, 150);
 
             // Create player
             this.player = this.physics.add.sprite(100, window.innerHeight - 200, "Idle");
@@ -88,7 +78,7 @@ const Game = () => {
             this.player.setDepth(10); // Player in front of door
 
             // Create door at the end of level
-            this.door = this.add.sprite(2200, window.innerHeight - 100, "door_17");
+            this.door = this.add.sprite(2200, window.innerHeight - 150, "door_17");
             this.door.setScale(0.3);
             this.door.setOrigin(0.5, 1); // Set origin to bottom center
             this.door.setDepth(0); // Door behind player
@@ -137,7 +127,7 @@ const Game = () => {
             this.anims.create({
               key: "walkup",
               frames: this.anims.generateFrameNumbers("WalkUp", { start: 0, end: 7 }),
-              frameRate: 10,
+              frameRate: 15,
               repeat: 0,
             });
 
@@ -170,6 +160,11 @@ const Game = () => {
             this.isOnGround = false;
           },
           update: function () {
+            // Skip update if level is complete
+            if (this.levelComplete) {
+              return;
+            }
+
             const speed = 300;
             const jumpPower = -500;
 
@@ -226,16 +221,17 @@ const Game = () => {
             }
 
             // Enter door to complete level
-            if (distanceToDoor < 50 && this.doorOpen && !this.levelComplete) {
+            if (Math.abs(this.player.x - this.door.x) < 10 && distanceToDoor < 40 && this.doorOpen && !this.levelComplete) {
               this.levelComplete = true;
 
-              // Disable player controls
+              // Disable player controls and physics
               this.player.body.setVelocity(0, 0);
               this.player.body.setAllowGravity(false);
               this.player.setFlipX(false);
 
-              // Play walk up animation
-              this.player.play("walkup");
+              // Stop any current animation and play walk up
+              this.player.stop();
+              this.player.play("walkup", true);
 
               // When walk up animation completes, fade out and restart level
               this.player.once("animationcomplete", () => {
