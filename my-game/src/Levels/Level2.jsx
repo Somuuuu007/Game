@@ -27,23 +27,16 @@ export class Level2Scene extends BaseScene {
   }
 
   createPlatforms() {
-    // Create descending steps from player position to door
-    const stepWidth = 200;
-    const stepHeight = 100;
-    const verticalGap = 80; // Distance between each step vertically
-    const horizontalGap = 200; // Distance between each step horizontally
+    // Create individual steps with custom properties
 
-    const startX = 100; // Starting position for first step
-    const startY = 200; // Just below player spawn
-    const numSteps = 7; // Number of steps to reach the door
-
-    // Create descending steps
-    for (let i = 0; i < numSteps; i++) {
-      const stepX = startX + (i * horizontalGap);
-      const stepY = startY + (i * verticalGap);
-
-      this.createPlatform(stepX, stepY, stepWidth, stepHeight);
-    }
+    // Step 1
+    this.createPlatform(0, 400, 200, window.innerHeight - 280);
+    this.createPlatform(280, 500, 200, window.innerHeight - 150);
+    this.createPlatform(480, 600, 200, window.innerHeight - 120);
+    this.createPlatform(680, 700, 200, window.innerHeight - 90);
+    this.createPlatform(880, 800, 200, window.innerHeight - 60);
+    this.createPlatform(1080, 900, 200, window.innerHeight - 30);
+    this.createPlatform(1280, 1000, 200, window.innerHeight - 0);
   }
 
   onLevelComplete() {
