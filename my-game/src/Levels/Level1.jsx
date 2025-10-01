@@ -15,6 +15,43 @@ class Level1Scene extends BaseScene {
   loadLevelAssets() {
     // Load Level 1 specific background - using the complete image
     this.load.image("background1", "/background 1/orig_big.png");
+    // Load rock sprite
+    this.load.image("rock", "/rock.png");
+  }
+
+  create() {
+    super.create();
+
+    // Add rock above the ground platform
+    this.rock = this.add.image(window.innerWidth / 3, window.innerHeight - 95, "rock");
+    this.rock.setScale(2);
+    this.rock.setDepth(5);
+
+    // Track if rock should follow player
+    this.rockActivated = false;
+  }
+
+  update() {
+    super.update();
+
+    // Check if player has passed the rock by 50 pixels
+    if (!this.rockActivated && this.player.x > this.rock.x + 60) {
+      this.rockActivated = true;
+    }
+
+    // If rock is activated, make it follow the player
+    if (this.rockActivated) {
+      const speed = 2.5;
+
+      // Rock moves horizontally towards player
+      if (this.player.body.velocity.x !== 0) {
+        // Player is moving, rock follows
+        if (this.rock.x < this.player.x) {
+          this.rock.x += speed;
+        }
+      }
+      // When player stops, rock stops too (no movement needed)
+    }
   }
 
   createPlatforms() {
