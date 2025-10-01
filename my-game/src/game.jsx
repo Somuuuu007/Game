@@ -36,6 +36,10 @@ const Game = () => {
               frameWidth: 48,
               frameHeight: 64,
             });
+            this.load.spritesheet("WalkUp", "/walk_Up.png", {
+              frameWidth: 48,
+              frameHeight: 64,
+            });
 
             // Load door sprites
             for (let i = 0; i <= 40; i++) {
@@ -81,11 +85,13 @@ const Game = () => {
             this.player.setScale(2);
             this.player.setCollideWorldBounds(true);
             this.player.body.setSize(20, 28, true);
+            this.player.setDepth(10); // Player in front of door
 
             // Create door at the end of level
-            this.door = this.add.sprite(2200, window.innerHeight - 100, "door_0");
+            this.door = this.add.sprite(2200, window.innerHeight - 100, "door_17");
             this.door.setScale(0.3);
             this.door.setOrigin(0.5, 1); // Set origin to bottom center
+            this.door.setDepth(0); // Door behind player
             this.door.play("door_closed");
 
             // Camera follows player
@@ -97,6 +103,7 @@ const Game = () => {
 
             // Track door state
             this.doorOpen = false;
+            this.levelComplete = false;
 
             // Create animations with proper frame counts
             this.anims.create({
@@ -127,16 +134,23 @@ const Game = () => {
               repeat: 0,
             });
 
+            this.anims.create({
+              key: "walkup",
+              frames: this.anims.generateFrameNumbers("WalkUp", { start: 0, end: 7 }),
+              frameRate: 10,
+              repeat: 0,
+            });
+
             // Door animations using individual sprite files
             this.anims.create({
               key: "door_closed",
-              frames: [{ key: "door_0" }],
+              frames: [{ key: "door_17" }],
               frameRate: 10,
             });
 
             this.anims.create({
               key: "door_opening",
-              frames: Array.from({ length: 41 }, (_, i) => ({ key: `door_${i}` })),
+              frames: Array.from({ length: 24 }, (_, i) => ({ key: `door_${i + 17}` })),
               frameRate: 20,
               repeat: 0,
             });
@@ -212,9 +226,26 @@ const Game = () => {
             }
 
             // Enter door to complete level
-            if (distanceToDoor < 50 && this.doorOpen) {
-              // Level complete - can trigger next level here
-              console.log("Level Complete!");
+            if (distanceToDoor < 50 && this.doorOpen && !this.levelComplete) {
+              this.levelComplete = true;
+
+              // Stop player movement
+              this.player.setVelocityX(0);
+              this.player.setVelocityY(0);
+
+              // Position player at door center and play walk up animation
+              this.player.x = this.door.x;
+              this.player.setFlipX(false);
+              this.player.play("walkup");
+
+              // When walk up animation completes, fade out and restart level
+              this.player.once("animationcomplete", () => {
+                this.cameras.main.fadeOut(500, 0, 0, 0);
+
+                this.cameras.main.once("camerafadeoutcomplete", () => {
+                  this.scene.restart();
+                });
+              });
             }
           },
         },
