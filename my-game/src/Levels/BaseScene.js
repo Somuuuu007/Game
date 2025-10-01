@@ -55,7 +55,8 @@ export class BaseScene extends Phaser.Scene {
 
     // Helper function to create platform
     this.createPlatform = (x, y, width, height) => {
-      const platform = this.add.rectangle(x, y, width, height, 0x000000);
+      const color = this.platformColor || 0x000000;
+      const platform = this.add.rectangle(x, y, width, height, color);
       this.physics.add.existing(platform, true);
       this.platforms.add(platform);
       return platform;

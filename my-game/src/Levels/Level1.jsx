@@ -7,6 +7,7 @@ class Level1Scene extends BaseScene {
     super("Level1");
     this.backgroundKey = "background1";
     this.groundPlatformHeight = 50; // Smaller height for this level
+    this.platformColor = 0x000000; // Dark blue color for this level
   }
 
   loadLevelAssets() {
