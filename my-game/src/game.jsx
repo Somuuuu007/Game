@@ -32,22 +32,49 @@ const Game = () => {
               frameWidth: 48,
               frameHeight: 64,
             });
+
+            // No external tileset needed - using simple rectangles
           },
           create: function () {
-            // Set background color to remove green line
-            this.cameras.main.setBackgroundColor('#87CEEB'); 
+            // Set background color - dark gray for minimalist look
+            this.cameras.main.setBackgroundColor('#1a1a1a');
 
-            // Create invisible ground platform
+            // Set world bounds
+            this.physics.world.setBounds(0, 0, 2400, window.innerHeight);
+
+            // Create platforms group
             this.platforms = this.physics.add.staticGroup();
-            const ground = this.add.rectangle(window.innerWidth / 2, window.innerHeight - 32, window.innerWidth, 64, 0x000000, 0);
-            this.physics.add.existing(ground, true);
-            this.platforms.add(ground);
+
+            // Helper function to create black tile platform
+            const createPlatform = (x, y, width, height) => {
+              const platform = this.add.rectangle(x, y, width, height, 0x000000);
+              this.physics.add.existing(platform, true);
+              this.platforms.add(platform);
+              return platform;
+            };
+
+            // Ground platform - taller base
+            createPlatform(1200, window.innerHeight - 50, 2400, 100);
+
+            // Floating platforms - simple level layout
+            createPlatform(400, window.innerHeight - 120, 150, 20);
+            createPlatform(450, window.innerHeight - 200, 120, 20);
+            createPlatform(700, window.innerHeight - 160, 100, 20);
+            createPlatform(950, window.innerHeight - 280, 140, 20);
+            createPlatform(1250, window.innerHeight - 220, 130, 20);
+            createPlatform(1500, window.innerHeight - 300, 110, 20);
+            createPlatform(1800, window.innerHeight - 240, 150, 20);
+            createPlatform(2100, window.innerHeight - 180, 120, 20);
 
             // Create player
             this.player = this.physics.add.sprite(100, window.innerHeight - 200, "Idle");
             this.player.setScale(2);
             this.player.setCollideWorldBounds(true);
             this.player.body.setSize(20, 28, true);
+
+            // Camera follows player
+            this.cameras.main.setBounds(0, 0, 2400, window.innerHeight);
+            this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
 
             // Player collides with platforms
             this.physics.add.collider(this.player, this.platforms);
@@ -70,7 +97,7 @@ const Game = () => {
             this.anims.create({
               key: "jump",
               frames: this.anims.generateFrameNumbers("Jump", { start: 0, end: 7 }),
-              frameRate: 20,
+              frameRate: 12,
               repeat: 0,
             });
 
@@ -84,7 +111,7 @@ const Game = () => {
           },
           update: function () {
             const speed = 300;
-            const jumpPower = -400;
+            const jumpPower = -500;
 
             // Check if player is on ground
             this.isOnGround = this.player.body.touching.down || this.player.body.blocked.down;
