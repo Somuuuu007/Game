@@ -43,14 +43,12 @@ class Level1Scene extends BaseScene {
     if (this.rockActivated) {
       const speed = 2.5;
 
-      // Rock moves horizontally towards player
-      if (this.player.body.velocity.x !== 0) {
-        // Player is moving, rock follows
-        if (this.rock.x < this.player.x) {
-          this.rock.x += speed;
-        }
+      // Rock moves horizontally towards player only when moving right and player is ahead by 60px
+      if (this.player.body.velocity.x > 0 && this.player.x > this.rock.x + 60) {
+        // Player is moving right and is ahead, rock follows
+        this.rock.x += speed;
       }
-      // When player stops, rock stops too (no movement needed)
+      // When player stops or moves left, rock stops
     }
   }
 
