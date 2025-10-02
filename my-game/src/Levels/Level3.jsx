@@ -42,19 +42,25 @@ export class Level3Scene extends BaseScene {
     this.platforms.add(this.disappearingStep);
 
     this.createPlatform(680, 700, 200, window.innerHeight - 90);
-    this.createPlatform(880, 800, 200, window.innerHeight - 60);
+
+    // Step 4 - Second disappearing step (trap)
+    this.disappearingStep2 = this.add.rectangle(880, 800, 200, window.innerHeight - 60, 0x212121);
+    this.physics.add.existing(this.disappearingStep2, true);
+    this.platforms.add(this.disappearingStep2);
+
     this.createPlatform(1080, 900, 200, window.innerHeight - 30);
     this.createPlatform(1280, 1000, 200, window.innerHeight - 0);
 
-    // Track if step has been touched
+    // Track if steps have been touched
     this.stepTouched = false;
+    this.step2Touched = false;
   }
 
   update() {
     // Override jump power for this level
     if (!this.levelComplete) {
-      const speed = 300;
-      const jumpPower = -500; // Increased jump power for this level
+      const speed = 250;
+      const jumpPower = -450; // Increased jump power for this level
 
       this.isOnGround = this.player.body.touching.down || this.player.body.blocked.down;
 
@@ -122,7 +128,7 @@ export class Level3Scene extends BaseScene {
       }
     }
 
-    // Check if player is standing on the disappearing step
+    // Check if player is standing on the first disappearing step
     if (!this.stepTouched && this.disappearingStep && this.player.body.touching.down) {
       // Check if player is overlapping with the disappearing step
       const playerBounds = this.player.getBounds();
@@ -134,6 +140,21 @@ export class Level3Scene extends BaseScene {
         // Remove from platforms group and destroy
         this.platforms.remove(this.disappearingStep);
         this.disappearingStep.destroy();
+      }
+    }
+
+    // Check if player is standing on the second disappearing step
+    if (!this.step2Touched && this.disappearingStep2 && this.player.body.touching.down) {
+      // Check if player is overlapping with the second disappearing step
+      const playerBounds = this.player.getBounds();
+      const stepBounds = this.disappearingStep2.getBounds();
+
+      if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, stepBounds)) {
+        this.step2Touched = true;
+
+        // Remove from platforms group and destroy
+        this.platforms.remove(this.disappearingStep2);
+        this.disappearingStep2.destroy();
       }
     }
 
@@ -152,9 +173,8 @@ export class Level3Scene extends BaseScene {
   }
 
   onLevelComplete() {
-    // Go to next level (for now, restart)
-    this.scene.restart();
-    // Later: this.scene.start("Level4");
+    // Go to Level 4
+    this.scene.start("Level4");
   }
 }
 

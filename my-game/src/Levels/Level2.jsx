@@ -53,8 +53,8 @@ export class Level2Scene extends BaseScene {
   update() {
     // Override jump power for this level
     if (!this.levelComplete) {
-      const speed = 300;
-      const jumpPower = -500; // Increased jump power for this level
+      const speed = 250;
+      const jumpPower = -450; // Increased jump power for this level
 
       this.isOnGround = this.player.body.touching.down || this.player.body.blocked.down;
 
