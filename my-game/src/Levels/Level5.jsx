@@ -20,6 +20,9 @@ export class Level5Scene extends BaseScene {
   create() {
     super.create();
 
+    // Track if game has been flipped
+    this.gameFlipped = false;
+
     // Create spike graphics for all boundaries (death zones)
     this.spikes = this.add.graphics();
     this.spikes.fillStyle(0x212121, 1);
@@ -126,13 +129,13 @@ export class Level5Scene extends BaseScene {
         this.player.play("jump");
       }
 
-      // Door logic
+      // Door logic - when player gets close, door disappears and game flips
       const distanceToDoor = Phaser.Math.Distance.Between(
         this.player.x, this.player.y,
         this.door.x, this.door.y
       );
 
-      if (distanceToDoor < 200 && !this.doorOpen) {
+      if (distanceToDoor < 200 && !this.doorOpen && !this.gameFlipped) {
         this.doorOpen = true;
         this.door.play("door_opening");
         this.door.once("animationcomplete", () => {
@@ -140,7 +143,30 @@ export class Level5Scene extends BaseScene {
         });
       }
 
-      if (Math.abs(this.player.x - this.door.x) < 10 && distanceToDoor < 40 && this.doorOpen && !this.levelComplete) {
+      // When player gets very close to door, make it disappear and flip the game
+      if (distanceToDoor < 100 && this.doorOpen && !this.gameFlipped) {
+        this.gameFlipped = true;
+
+        // Make door disappear
+        this.door.setVisible(false);
+
+        // Flip the entire game upside down
+        this.cameras.main.setAngle(180);
+
+        // Reset door state for later
+        this.doorOpen = false;
+
+        // Reposition door to opposite corner after flip
+        this.time.delayedCall(500, () => {
+          this.door.x = 150; // Left side (opposite of original position)
+          this.door.y = window.innerHeight - 80; // Top of the ground platform when flipped
+          this.door.setVisible(true);
+          this.door.play("door_closed");
+        });
+      }
+
+      // Normal door completion logic (after flip)
+      if (this.gameFlipped && Math.abs(this.player.x - this.door.x) < 10 && distanceToDoor < 40 && this.doorOpen && !this.levelComplete) {
         this.levelComplete = true;
         this.player.body.setVelocity(0, 0);
         this.player.body.setAllowGravity(false);
@@ -155,6 +181,15 @@ export class Level5Scene extends BaseScene {
             localStorage.removeItem('level5Deaths');
             this.onLevelComplete();
           });
+        });
+      }
+
+      // Re-open door after game is flipped
+      if (this.gameFlipped && distanceToDoor < 200 && !this.doorOpen) {
+        this.doorOpen = true;
+        this.door.play("door_opening");
+        this.door.once("animationcomplete", () => {
+          this.door.play("door_open");
         });
       }
     }
