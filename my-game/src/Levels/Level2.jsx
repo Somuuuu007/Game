@@ -34,13 +34,52 @@ export class Level2Scene extends BaseScene {
     // Create individual steps with custom properties
 
     // Step 1
-    this.createPlatform(0, 400, 200, window.innerHeight - 280);
     this.createPlatform(280, 500, 200, window.innerHeight - 150);
-    this.createPlatform(480, 600, 200, window.innerHeight - 120);
+
+    // Step 2 - Disappearing step (trap)
+    this.disappearingStep = this.add.rectangle(480, 600, 200, window.innerHeight - 120, 0x212121);
+    this.physics.add.existing(this.disappearingStep, true);
+    this.platforms.add(this.disappearingStep);
+
     this.createPlatform(680, 700, 200, window.innerHeight - 90);
     this.createPlatform(880, 800, 200, window.innerHeight - 60);
     this.createPlatform(1080, 900, 200, window.innerHeight - 30);
     this.createPlatform(1280, 1000, 200, window.innerHeight - 0);
+
+    // Track if step has been touched
+    this.stepTouched = false;
+  }
+
+  update() {
+    super.update();
+
+    // Check if player is standing on the disappearing step
+    if (!this.stepTouched && this.disappearingStep && this.player.body.touching.down) {
+      // Check if player is overlapping with the disappearing step
+      const playerBounds = this.player.getBounds();
+      const stepBounds = this.disappearingStep.getBounds();
+
+      if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, stepBounds)) {
+        this.stepTouched = true;
+
+        // Remove from platforms group and destroy
+        this.platforms.remove(this.disappearingStep);
+        this.disappearingStep.destroy();
+      }
+    }
+
+    // Check if player has fallen to the bottom ground (death zone)
+    if (this.player.y >= window.innerHeight - 50 && !this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
+    }
   }
 
   onLevelComplete() {
