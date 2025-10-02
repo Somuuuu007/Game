@@ -2,21 +2,21 @@ import { useEffect } from "react";
 import Phaser from "phaser";
 import { BaseScene } from "./BaseScene";
 
-export class Level2Scene extends BaseScene {
+export class Level3Scene extends BaseScene {
   constructor() {
-    super("Level2");
-    this.backgroundKey = "background2";
+    super("Level3");
+    this.backgroundKey = "background3";
     this.groundPlatformHeight = 600; // Much taller ground platform
     this.groundPlatformWidth = 200; // Much taller ground platform
     this.platformColor = 0x212121;
     this.levelWidth = window.innerWidth; // Single screen width like Level 1
-    this.doorX = 1380; // Door on the last step
+    this.doorX = 1300; // Door on the last step
 
   }
 
   loadLevelAssets() {
-    // Load Level 2 specific background
-    this.load.image("background2", "/background 1/orig_big2.png"); // Change this when you have Level 2 background
+    // Load Level 3 specific background
+    this.load.image("background3", "/background 1/orig_big3.png"); // Change this when you have Level 3 background
   }
 
   create() {
@@ -152,12 +152,13 @@ export class Level2Scene extends BaseScene {
   }
 
   onLevelComplete() {
-    // Go to Level 3
-    this.scene.start("Level3");
+    // Go to next level (for now, restart)
+    this.scene.restart();
+    // Later: this.scene.start("Level4");
   }
 }
 
-const Level2 = () => {
+const Level3 = () => {
   useEffect(() => {
     let game;
 
@@ -174,7 +175,7 @@ const Level2 = () => {
             debug: false,
           },
         },
-        scene: [Level2Scene],
+        scene: [Level3Scene],
       };
 
       game = new Phaser.Game(config);
@@ -190,4 +191,4 @@ const Level2 = () => {
   return <div id="phaser-container"></div>;
 };
 
-export default Level2;
+export default Level3;
