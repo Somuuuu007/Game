@@ -2,10 +2,10 @@ import { useEffect } from "react";
 import Phaser from "phaser";
 import { BaseScene } from "./BaseScene";
 
-export class Level4Scene extends BaseScene {
+export class Level5Scene extends BaseScene {
   constructor() {
-    super("Level4");
-    this.backgroundKey = "background4";
+    super("Level5");
+    this.backgroundKey = "background5";
     this.groundPlatformHeight = 80;
     this.platformColor = 0x212121;
     this.levelWidth = window.innerWidth; // Single screen width for this level
@@ -13,30 +13,24 @@ export class Level4Scene extends BaseScene {
   }
 
   loadLevelAssets() {
-    // Load Level 4 specific background
-    this.load.image("background4", "/background 1/orig_big4.png");
+    // Load Level 5 specific background
+    this.load.image("background5", "/background 1/orig_big5.png");
   }
 
   create() {
     super.create();
 
-    // Get death count from localStorage for this level
-    const deathCount = parseInt(localStorage.getItem('level4Deaths') || '0');
-
-    // Controls are reversed on first attempt (deathCount = 0), normal on second (deathCount = 1), reversed again, etc.
-    this.controlsReversed = (deathCount % 2 === 0);
-
-    // Create spike graphics for left boundary (death zone)
+    // Create spike graphics for all boundaries (death zones)
     this.spikes = this.add.graphics();
-    this.spikes.fillStyle(0x212121, 1); // Dark red color for spikes
+    this.spikes.fillStyle(0x212121, 1);
     this.spikes.setDepth(11);
 
-    // Draw triangular spikes along the left boundary
     const spikeWidth = 30;
     const spikeHeight = 40;
-    const spikeCount = Math.ceil(window.innerHeight / spikeHeight);
 
-    for (let i = 0; i < spikeCount; i++) {
+    // Left boundary spikes
+    const leftSpikeCount = Math.ceil(window.innerHeight / spikeHeight);
+    for (let i = 0; i < leftSpikeCount; i++) {
       const y = i * spikeHeight;
       this.spikes.fillTriangle(
         0, y,                           // Top left point
@@ -45,13 +39,46 @@ export class Level4Scene extends BaseScene {
       );
     }
 
-    // Create invisible collision rectangle for spikes
-    this.spikeCollider = this.add.rectangle(15, window.innerHeight / 2, 30, window.innerHeight);
-    this.spikeCollider.setDepth(10);
-    this.physics.add.existing(this.spikeCollider, true);
+    // Right boundary spikes
+    const rightSpikeCount = Math.ceil(window.innerHeight / spikeHeight);
+    for (let i = 0; i < rightSpikeCount; i++) {
+      const y = i * spikeHeight;
+      this.spikes.fillTriangle(
+        window.innerWidth, y,                    // Top right point
+        window.innerWidth, y + spikeHeight,      // Bottom right point
+        window.innerWidth - spikeWidth, y + spikeHeight / 2 // Left point (tip of spike)
+      );
+    }
 
-    // Add collision detection between player and spikes
-    this.physics.add.overlap(this.player, this.spikeCollider, this.handleBoundaryCollision, null, this);
+    // Top boundary spikes
+    const topSpikeCount = Math.ceil(window.innerWidth / spikeHeight);
+    for (let i = 0; i < topSpikeCount; i++) {
+      const x = i * spikeHeight;
+      this.spikes.fillTriangle(
+        x, 0,                           // Left top point
+        x + spikeHeight, 0,             // Right top point
+        x + spikeHeight / 2, spikeWidth // Bottom point (tip of spike)
+      );
+    }
+
+    // Create invisible collision rectangles for all spike boundaries
+    // Left boundary
+    this.leftSpikeCollider = this.add.rectangle(15, window.innerHeight / 2, 30, window.innerHeight);
+    this.leftSpikeCollider.setDepth(10);
+    this.physics.add.existing(this.leftSpikeCollider, true);
+    this.physics.add.overlap(this.player, this.leftSpikeCollider, this.handleBoundaryCollision, null, this);
+
+    // Right boundary
+    this.rightSpikeCollider = this.add.rectangle(window.innerWidth - 15, window.innerHeight / 2, 30, window.innerHeight);
+    this.rightSpikeCollider.setDepth(10);
+    this.physics.add.existing(this.rightSpikeCollider, true);
+    this.physics.add.overlap(this.player, this.rightSpikeCollider, this.handleBoundaryCollision, null, this);
+
+    // Top boundary
+    this.topSpikeCollider = this.add.rectangle(window.innerWidth / 2, 15, window.innerWidth, 30);
+    this.topSpikeCollider.setDepth(10);
+    this.physics.add.existing(this.topSpikeCollider, true);
+    this.physics.add.overlap(this.player, this.topSpikeCollider, this.handleBoundaryCollision, null, this);
   }
 
   handleBoundaryCollision() {
@@ -61,30 +88,20 @@ export class Level4Scene extends BaseScene {
   }
 
   update() {
-    // Override movement controls for this level
     if (!this.levelComplete) {
       const speed = 300;
 
       this.isOnGround = this.player.body.touching.down || this.player.body.blocked.down;
 
-      // Reversed controls logic
-      const leftPressed = this.controlsReversed
-        ? (this.cursors.right.isDown || this.dKey.isDown)
-        : (this.cursors.left.isDown || this.aKey.isDown);
-
-      const rightPressed = this.controlsReversed
-        ? (this.cursors.left.isDown || this.aKey.isDown)
-        : (this.cursors.right.isDown || this.dKey.isDown);
-
-      // Horizontal movement with switched controls
-      if (leftPressed) {
+      // Normal horizontal movement
+      if (this.cursors.left.isDown || this.aKey.isDown) {
         this.player.setVelocityX(-speed);
         this.player.setFlipX(true);
 
         if (this.isOnGround && this.player.anims.currentAnim.key !== "run") {
           this.player.play("run");
         }
-      } else if (rightPressed) {
+      } else if (this.cursors.right.isDown || this.dKey.isDown) {
         this.player.setVelocityX(speed);
         this.player.setFlipX(false);
 
@@ -99,7 +116,7 @@ export class Level4Scene extends BaseScene {
         }
       }
 
-      // Jumping (not reversed)
+      // Jumping
       if ((Phaser.Input.Keyboard.JustDown(this.spaceKey) || Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.wKey)) && this.isOnGround) {
         this.player.setVelocityY(-400);
         this.player.play("jump");
@@ -135,7 +152,7 @@ export class Level4Scene extends BaseScene {
           this.cameras.main.fadeOut(500, 0, 0, 0);
           this.cameras.main.once("camerafadeoutcomplete", () => {
             // Reset death count when level is completed
-            localStorage.removeItem('level4Deaths');
+            localStorage.removeItem('level5Deaths');
             this.onLevelComplete();
           });
         });
@@ -147,8 +164,16 @@ export class Level4Scene extends BaseScene {
       this.handleDeath();
     }
 
-    // Check if player touches left boundary (death zone)
+    // Check if player touches any boundary (death zone)
     if (this.player.x <= 10 && !this.levelComplete) {
+      this.handleDeath();
+    }
+
+    if (this.player.x >= window.innerWidth - 10 && !this.levelComplete) {
+      this.handleDeath();
+    }
+
+    if (this.player.y <= 10 && !this.levelComplete) {
       this.handleDeath();
     }
   }
@@ -157,8 +182,8 @@ export class Level4Scene extends BaseScene {
     this.levelComplete = true;
 
     // Increment death count
-    const currentDeaths = parseInt(localStorage.getItem('level4Deaths') || '0');
-    localStorage.setItem('level4Deaths', (currentDeaths + 1).toString());
+    const currentDeaths = parseInt(localStorage.getItem('level5Deaths') || '0');
+    localStorage.setItem('level5Deaths', (currentDeaths + 1).toString());
 
     this.player.play("death");
     this.player.body.setVelocity(0, 0);
@@ -171,16 +196,17 @@ export class Level4Scene extends BaseScene {
   }
 
   createPlatforms() {
-    // Add Level 4 specific platforms here
+    // Add Level 5 specific platforms here
   }
 
   onLevelComplete() {
-    // Go to Level 5
-    this.scene.start("Level5");
+    // Go to next level (for now, restart)
+    this.scene.restart();
+    // Later: this.scene.start("Level6");
   }
 }
 
-const Level4 = () => {
+const Level5 = () => {
   useEffect(() => {
     let game;
 
@@ -197,7 +223,7 @@ const Level4 = () => {
             debug: false,
           },
         },
-        scene: [Level4Scene],
+        scene: [Level5Scene],
       };
 
       game = new Phaser.Game(config);
@@ -213,4 +239,4 @@ const Level4 = () => {
   return <div id="phaser-container"></div>;
 };
 
-export default Level4;
+export default Level5;
