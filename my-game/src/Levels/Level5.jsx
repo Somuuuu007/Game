@@ -23,6 +23,11 @@ export class Level5Scene extends BaseScene {
     // Track if game has been flipped
     this.gameFlipped = false;
 
+    // Track spike movement
+    this.leftSpikeX = 0;
+    this.rightSpikeX = window.innerWidth;
+    this.spikesMoving = false;
+
     // Create spike graphics for all boundaries (death zones)
     this.spikes = this.add.graphics();
     this.spikes.fillStyle(0x212121, 1);
@@ -129,26 +134,19 @@ export class Level5Scene extends BaseScene {
         this.player.play("jump");
       }
 
-      // Door logic - when player gets close, door disappears and game flips
       const distanceToDoor = Phaser.Math.Distance.Between(
         this.player.x, this.player.y,
         this.door.x, this.door.y
       );
 
-      if (distanceToDoor < 200 && !this.doorOpen && !this.gameFlipped) {
-        this.doorOpen = true;
-        this.door.play("door_opening");
-        this.door.once("animationcomplete", () => {
-          this.door.play("door_open");
-        });
-      }
-
-      // When player gets very close to door, make it disappear and flip the game
-      if (distanceToDoor < 100 && this.doorOpen && !this.gameFlipped) {
+      // When player gets close to door BEFORE flip, make it disappear and flip the game
+      if (distanceToDoor < 100 && !this.gameFlipped) {
         this.gameFlipped = true;
 
-        // Make door disappear
+        // Make door disappear and move it off-screen temporarily
         this.door.setVisible(false);
+        this.door.x = -1000; // Move off-screen to prevent any collision
+        this.door.y = -1000;
 
         // Flip the entire game upside down
         this.cameras.main.setAngle(180);
@@ -156,41 +154,102 @@ export class Level5Scene extends BaseScene {
         // Reset door state for later
         this.doorOpen = false;
 
-        // Reposition door to opposite corner after flip
+        // Start moving spikes toward center
+        this.spikesMoving = true;
+
+        // Reposition door to center after flip
         this.time.delayedCall(500, () => {
-          this.door.x = 150; // Left side (opposite of original position)
+          this.door.x = window.innerWidth / 2; // Center of the screen
           this.door.y = window.innerHeight - 80; // Top of the ground platform when flipped
           this.door.setVisible(true);
           this.door.play("door_closed");
         });
       }
 
-      // Normal door completion logic (after flip)
-      if (this.gameFlipped && Math.abs(this.player.x - this.door.x) < 10 && distanceToDoor < 40 && this.doorOpen && !this.levelComplete) {
-        this.levelComplete = true;
-        this.player.body.setVelocity(0, 0);
-        this.player.body.setAllowGravity(false);
-        this.player.setFlipX(false);
-        this.player.stop();
-        this.player.play("walkup", true);
-
-        this.player.once("animationcomplete", () => {
-          this.cameras.main.fadeOut(500, 0, 0, 0);
-          this.cameras.main.once("camerafadeoutcomplete", () => {
-            // Reset death count when level is completed
-            localStorage.removeItem('level5Deaths');
-            this.onLevelComplete();
+      // Door logic - ONLY works after game is flipped
+      if (this.gameFlipped) {
+        // Door opening logic
+        if (distanceToDoor < 200 && !this.doorOpen) {
+          this.doorOpen = true;
+          this.door.play("door_opening");
+          this.door.once("animationcomplete", () => {
+            this.door.play("door_open");
           });
-        });
+        }
+
+        // Door completion logic
+        if (Math.abs(this.player.x - this.door.x) < 10 && distanceToDoor < 40 && this.doorOpen && !this.levelComplete) {
+          this.levelComplete = true;
+          this.player.body.setVelocity(0, 0);
+          this.player.body.setAllowGravity(false);
+          this.player.setFlipX(false);
+          this.player.stop();
+          this.player.play("walkup", true);
+
+          this.player.once("animationcomplete", () => {
+            this.cameras.main.fadeOut(500, 0, 0, 0);
+            this.cameras.main.once("camerafadeoutcomplete", () => {
+              // Reset death count when level is completed
+              localStorage.removeItem('level5Deaths');
+              this.onLevelComplete();
+            });
+          });
+        }
       }
 
-      // Re-open door after game is flipped
-      if (this.gameFlipped && distanceToDoor < 200 && !this.doorOpen) {
-        this.doorOpen = true;
-        this.door.play("door_opening");
-        this.door.once("animationcomplete", () => {
-          this.door.play("door_open");
-        });
+      // Move spikes toward center when game flips
+      if (this.spikesMoving) {
+        const spikeSpeed = 3;
+
+        // Move left spikes to the right
+        this.leftSpikeX += spikeSpeed;
+
+        // Move right spikes to the left
+        this.rightSpikeX -= spikeSpeed;
+
+        // Redraw spikes at new positions
+        this.spikes.clear();
+        this.spikes.fillStyle(0x212121, 1);
+
+        const spikeWidth = 30;
+        const spikeHeight = 40;
+
+        // Left boundary spikes (moving right)
+        const leftSpikeCount = Math.ceil(window.innerHeight / spikeHeight);
+        for (let i = 0; i < leftSpikeCount; i++) {
+          const y = i * spikeHeight;
+          this.spikes.fillTriangle(
+            this.leftSpikeX, y,
+            this.leftSpikeX, y + spikeHeight,
+            this.leftSpikeX + spikeWidth, y + spikeHeight / 2
+          );
+        }
+
+        // Right boundary spikes (moving left)
+        const rightSpikeCount = Math.ceil(window.innerHeight / spikeHeight);
+        for (let i = 0; i < rightSpikeCount; i++) {
+          const y = i * spikeHeight;
+          this.spikes.fillTriangle(
+            this.rightSpikeX, y,
+            this.rightSpikeX, y + spikeHeight,
+            this.rightSpikeX - spikeWidth, y + spikeHeight / 2
+          );
+        }
+
+        // Top boundary spikes (stay in place)
+        const topSpikeCount = Math.ceil(window.innerWidth / spikeHeight);
+        for (let i = 0; i < topSpikeCount; i++) {
+          const x = i * spikeHeight;
+          this.spikes.fillTriangle(
+            x, 0,
+            x + spikeHeight, 0,
+            x + spikeHeight / 2, spikeWidth
+          );
+        }
+
+        // Update collider positions
+        this.leftSpikeCollider.x = this.leftSpikeX + 15;
+        this.rightSpikeCollider.x = this.rightSpikeX - 15;
       }
     }
 
@@ -200,12 +259,23 @@ export class Level5Scene extends BaseScene {
     }
 
     // Check if player touches any boundary (death zone)
-    if (this.player.x <= 10 && !this.levelComplete) {
-      this.handleDeath();
-    }
+    // Left boundary - check based on current spike position
+    if (this.spikesMoving) {
+      if (this.player.x <= this.leftSpikeX + 30 && !this.levelComplete) {
+        this.handleDeath();
+      }
 
-    if (this.player.x >= window.innerWidth - 10 && !this.levelComplete) {
-      this.handleDeath();
+      if (this.player.x >= this.rightSpikeX - 30 && !this.levelComplete) {
+        this.handleDeath();
+      }
+    } else {
+      if (this.player.x <= 10 && !this.levelComplete) {
+        this.handleDeath();
+      }
+
+      if (this.player.x >= window.innerWidth - 10 && !this.levelComplete) {
+        this.handleDeath();
+      }
     }
 
     if (this.player.y <= 10 && !this.levelComplete) {
