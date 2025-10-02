@@ -25,6 +25,39 @@ export class Level4Scene extends BaseScene {
 
     // Controls are reversed on first attempt (deathCount = 0), normal on second (deathCount = 1), reversed again, etc.
     this.controlsReversed = (deathCount % 2 === 0);
+
+    // Create spike graphics for left boundary (death zone)
+    this.spikes = this.add.graphics();
+    this.spikes.fillStyle(0x212121, 1); // Dark red color for spikes
+    this.spikes.setDepth(11);
+
+    // Draw triangular spikes along the left boundary
+    const spikeWidth = 30;
+    const spikeHeight = 40;
+    const spikeCount = Math.ceil(window.innerHeight / spikeHeight);
+
+    for (let i = 0; i < spikeCount; i++) {
+      const y = i * spikeHeight;
+      this.spikes.fillTriangle(
+        0, y,                           // Top left point
+        0, y + spikeHeight,             // Bottom left point
+        spikeWidth, y + spikeHeight / 2 // Right point (tip of spike)
+      );
+    }
+
+    // Create invisible collision rectangle for spikes
+    this.spikeCollider = this.add.rectangle(15, window.innerHeight / 2, 30, window.innerHeight);
+    this.spikeCollider.setDepth(10);
+    this.physics.add.existing(this.spikeCollider, true);
+
+    // Add collision detection between player and spikes
+    this.physics.add.overlap(this.player, this.spikeCollider, this.handleBoundaryCollision, null, this);
+  }
+
+  handleBoundaryCollision() {
+    if (!this.levelComplete) {
+      this.handleDeath();
+    }
   }
 
   update() {
@@ -111,6 +144,11 @@ export class Level4Scene extends BaseScene {
 
     // Check if player falls off the world (death)
     if (this.player.y >= window.innerHeight && !this.levelComplete) {
+      this.handleDeath();
+    }
+
+    // Check if player touches left boundary (death zone)
+    if (this.player.x <= 10 && !this.levelComplete) {
       this.handleDeath();
     }
   }
