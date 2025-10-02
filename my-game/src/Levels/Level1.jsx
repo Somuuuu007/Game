@@ -77,6 +77,8 @@ export class Level1Scene extends BaseScene {
   }
 
   onLevelComplete() {
+    // Save next level to localStorage
+    localStorage.setItem('currentLevel', 'Level2');
     // Go to Level 2
     this.scene.start("Level2");
   }

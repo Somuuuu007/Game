@@ -2,21 +2,21 @@ import { useEffect } from "react";
 import Phaser from "phaser";
 import { BaseScene } from "./BaseScene";
 
-export class Level2Scene extends BaseScene {
+export class Level6Scene extends BaseScene {
   constructor() {
-    super("Level2");
-    this.backgroundKey = "background2";
-    this.groundPlatformHeight = 600; // Much taller ground platform
+    super("Level6");
+    this.backgroundKey = "background6";
+    this.groundPlatformHeight = 100; // Much taller ground platform
     this.groundPlatformWidth = 200; // Much taller ground platform
     this.platformColor = 0x212121;
     this.levelWidth = window.innerWidth; // Single screen width like Level 1
-    this.doorX = 1380; // Door on the last step
+    this.doorX = 1300; // Door on the last step
 
   }
 
   loadLevelAssets() {
-    // Load Level 2 specific background
-    this.load.image("background2", "/background 1/orig_big2.png"); // Change this when you have Level 2 background
+    // Load Level 6 specific background
+    this.load.image("background6", "/background 1/orig_big6.png");
   }
 
   create() {
@@ -34,20 +34,26 @@ export class Level2Scene extends BaseScene {
     // Create individual steps with custom properties
 
     // Step 1
-    this.createPlatform(280, 500, 200, window.innerHeight - 150);
+    this.createPlatform(300, 650, 200, 200);
 
     // Step 2 - Disappearing step (trap)
-    this.disappearingStep = this.add.rectangle(480, 600, 200, window.innerHeight - 120, 0x212121);
+    this.disappearingStep = this.add.rectangle(480, 600, 200, 280, 0x212121);
     this.physics.add.existing(this.disappearingStep, true);
     this.platforms.add(this.disappearingStep);
 
-    this.createPlatform(680, 700, 200, window.innerHeight - 90);
-    this.createPlatform(880, 800, 200, window.innerHeight - 60);
-    this.createPlatform(1080, 900, 200, window.innerHeight - 30);
-    this.createPlatform(1280, 1000, 200, window.innerHeight - 0);
+    this.createPlatform(680, 600, 200, 460);
 
-    // Track if step has been touched
+    // Step 4 - Second disappearing step (trap)
+    this.disappearingStep2 = this.add.rectangle(880, 600, 200, 620, 0x212121);
+    this.physics.add.existing(this.disappearingStep2, true);
+    this.platforms.add(this.disappearingStep2);
+
+    this.createPlatform(1080, 600, 200, 780);
+    this.createPlatform(1280, 600, 200, 920);
+
+    // Track if steps have been touched
     this.stepTouched = false;
+    this.step2Touched = false;
   }
 
   update() {
@@ -122,7 +128,7 @@ export class Level2Scene extends BaseScene {
       }
     }
 
-    // Check if player is standing on the disappearing step
+    // Check if player is standing on the first disappearing step
     if (!this.stepTouched && this.disappearingStep && this.player.body.touching.down) {
       // Check if player is overlapping with the disappearing step
       const playerBounds = this.player.getBounds();
@@ -134,6 +140,21 @@ export class Level2Scene extends BaseScene {
         // Remove from platforms group and destroy
         this.platforms.remove(this.disappearingStep);
         this.disappearingStep.destroy();
+      }
+    }
+
+    // Check if player is standing on the second disappearing step
+    if (!this.step2Touched && this.disappearingStep2 && this.player.body.touching.down) {
+      // Check if player is overlapping with the second disappearing step
+      const playerBounds = this.player.getBounds();
+      const stepBounds = this.disappearingStep2.getBounds();
+
+      if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, stepBounds)) {
+        this.step2Touched = true;
+
+        // Remove from platforms group and destroy
+        this.platforms.remove(this.disappearingStep2);
+        this.disappearingStep2.destroy();
       }
     }
 
@@ -152,14 +173,13 @@ export class Level2Scene extends BaseScene {
   }
 
   onLevelComplete() {
-    // Save next level to localStorage
-    localStorage.setItem('currentLevel', 'Level3');
-    // Go to Level 3
-    this.scene.start("Level3");
+    // Go to next level (for now, restart)
+    this.scene.restart();
+    // Later: this.scene.start("Level7");
   }
 }
 
-const Level2 = () => {
+const Level6 = () => {
   useEffect(() => {
     let game;
 
@@ -176,7 +196,7 @@ const Level2 = () => {
             debug: false,
           },
         },
-        scene: [Level2Scene],
+        scene: [Level6Scene],
       };
 
       game = new Phaser.Game(config);
@@ -192,4 +212,4 @@ const Level2 = () => {
   return <div id="phaser-container"></div>;
 };
 
-export default Level2;
+export default Level6;

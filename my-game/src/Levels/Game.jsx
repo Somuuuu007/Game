@@ -5,6 +5,7 @@ import { Level2Scene } from "./Level2";
 import { Level3Scene } from "./Level3";
 import { Level4Scene } from "./Level4";
 import { Level5Scene } from "./Level5";
+import { Level6Scene } from "./Level6";
 
 const Game = () => {
   useEffect(() => {
@@ -26,7 +27,7 @@ const Game = () => {
             debug: false,
           },
         },
-        scene: [Level1Scene, Level2Scene, Level3Scene, Level4Scene, Level5Scene],
+        scene: [Level1Scene, Level2Scene, Level3Scene, Level4Scene, Level5Scene, Level6Scene],
       };
 
       game = new Phaser.Game(config);
