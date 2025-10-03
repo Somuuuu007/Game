@@ -32,11 +32,12 @@ export class Level9Scene extends BaseScene {
     // Create middle disappearing platform between left and right platforms
     const leftPlatformEnd = this.groundPlatformWidth;
     const rightPlatformStart = window.innerWidth - 200 - 200;
-    const middlePlatformX = (leftPlatformEnd + rightPlatformStart) / 2;
-    this.middlePlatform = this.createPlatform(middlePlatformX, window.innerHeight - this.groundPlatformHeight / 2, 250, this.groundPlatformHeight);
+    this.middlePlatformX = (leftPlatformEnd + rightPlatformStart) / 2;
+    this.middlePlatform = this.createPlatform(this.middlePlatformX, window.innerHeight - this.groundPlatformHeight / 2, 250, this.groundPlatformHeight);
 
     // Track if middle platform has been stepped on
     this.middlePlatformStepped = false;
+    this.fallingObject = null;
   }
 
   update() {
@@ -112,18 +113,48 @@ export class Level9Scene extends BaseScene {
     }
 
     // Check if player steps on middle platform and make it disappear
-    if (!this.middlePlatformStepped && this.player.body.touching.down) {
+    if (!this.middlePlatformStepped && this.middlePlatform && this.player.body.touching.down) {
       const playerBounds = this.player.getBounds();
       const middlePlatformBounds = this.middlePlatform.getBounds();
 
       if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, middlePlatformBounds)) {
         this.middlePlatformStepped = true;
 
+        // Create falling circular object after 0.5 second delay
+        this.time.delayedCall(200, () => {
+          const fallingObjectX = this.middlePlatformX - 80; // Offset to the left
+          this.fallingObject = this.add.circle(fallingObjectX, 0, 40, 0x000000); // Black circle, radius 40
+          this.physics.add.existing(this.fallingObject);
+          this.fallingObject.body.setVelocityY(400); // Fall speed
+          this.fallingObject.body.setBounce(0.2); // Bounce when hitting surfaces
+          this.fallingObject.body.setCollideWorldBounds(true); // Don't go off screen
+          this.fallingObject.setDepth(15);
+
+          // Make it collide with platforms
+          this.physics.add.collider(this.fallingObject, this.platforms);
+        });
+
         // Make platform disappear after a short delay
         this.time.delayedCall(100, () => {
-          this.middlePlatform.destroy();
-          this.platforms.remove(this.middlePlatform);
+          if (this.middlePlatform) {
+            this.middlePlatform.destroy();
+            this.platforms.remove(this.middlePlatform);
+            this.middlePlatform = null;
+          }
         });
+      }
+    }
+
+    // Check collision between falling object and player
+    if (this.fallingObject && !this.levelComplete) {
+      const distanceToPlayer = Phaser.Math.Distance.Between(
+        this.fallingObject.x, this.fallingObject.y,
+        this.player.x, this.player.y
+      );
+
+      // Kill player if they're within 60 pixels radius
+      if (distanceToPlayer < 60) {
+        this.handleFallingObjectCollision();
       }
     }
 
@@ -160,6 +191,20 @@ export class Level9Scene extends BaseScene {
   }
 
   handleRollingObjectCollision() {
+    if (!this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
+    }
+  }
+
+  handleFallingObjectCollision() {
     if (!this.levelComplete) {
       this.levelComplete = true;
       this.player.play("death");
