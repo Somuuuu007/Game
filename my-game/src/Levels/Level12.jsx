@@ -12,6 +12,7 @@ export class Level12Scene extends BaseScene {
     this.levelWidth = window.innerWidth; // Single screen width like Level 1
     this.doorX = 1380; // Door on the last step
     this.spikeTrapTriggered = false; // Track if spike trap has been triggered
+    this.step3SpikesTrapTriggered = false; // Track if step 3 spikes have been triggered
   }
 
   loadLevelAssets() {
@@ -146,6 +147,29 @@ export class Level12Scene extends BaseScene {
     spike3.setOrigin(0.5, 0);
     spike3.setAngle(180);
     spike3.setDepth(11);
+
+    // Create 2 spikes coming from right side (initially off-screen)
+    const step3Y = baseStepHeight;
+    this.step3RightSpike1 = this.add.image(window.innerWidth + 50, step3Y - 50, "spike");
+    this.step3RightSpike1.setOrigin(0.5, 0.5);
+    this.step3RightSpike1.setAngle(-90); // Point left
+    this.step3RightSpike1.setDepth(11);
+
+    this.step3RightSpike2 = this.add.image(window.innerWidth + 50, step3Y - 30, "spike");
+    this.step3RightSpike2.setOrigin(0.5, 0.5);
+    this.step3RightSpike2.setAngle(-90); // Point left
+    this.step3RightSpike2.setDepth(11);
+
+    // Create collision for right-side spikes
+    this.step3RightSpikeCollider1 = this.add.rectangle(window.innerWidth + 50, step3Y - 50, 40, 40);
+    this.step3RightSpikeCollider1.setDepth(10);
+    this.physics.add.existing(this.step3RightSpikeCollider1, false);
+    this.step3RightSpikeCollider1.body.setAllowGravity(false);
+
+    this.step3RightSpikeCollider2 = this.add.rectangle(window.innerWidth + 50, step3Y - 30, 40, 40);
+    this.step3RightSpikeCollider2.setDepth(10);
+    this.physics.add.existing(this.step3RightSpikeCollider2, false);
+    this.step3RightSpikeCollider2.body.setAllowGravity(false);
   }
 
   update() {
@@ -215,6 +239,36 @@ export class Level12Scene extends BaseScene {
             });
             this.step2SpikeCollider.body.enable = false;
           });
+        }
+      }
+
+      // Step 3 spike trap - trigger when player lands on step 3
+      if (!this.step3SpikesTrapTriggered && this.player.body.touching.down) {
+        const step3Bounds = this.step3.getBounds();
+        const playerBounds = this.player.getBounds();
+
+        // Check if player is on step 3
+        if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, step3Bounds)) {
+          this.step3SpikesTrapTriggered = true;
+
+          // Move spikes from right side all the way to the left side of screen
+          this.tweens.add({
+            targets: [this.step3RightSpike1, this.step3RightSpikeCollider1],
+            x: -100,
+            duration: 800,
+            ease: 'Linear'
+          });
+
+          this.tweens.add({
+            targets: [this.step3RightSpike2, this.step3RightSpikeCollider2],
+            x: -100,
+            duration: 800,
+            ease: 'Linear'
+          });
+
+          // Add collision detection
+          this.physics.add.overlap(this.player, this.step3RightSpikeCollider1, this.handleStep2SpikeCollision, null, this);
+          this.physics.add.overlap(this.player, this.step3RightSpikeCollider2, this.handleStep2SpikeCollision, null, this);
         }
       }
 
