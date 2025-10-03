@@ -6,7 +6,7 @@ export class Level10Scene extends BaseScene {
   constructor() {
     super("Level10");
     this.backgroundKey = "background10";
-    this.groundPlatformHeight = 400; // Much taller ground platform
+    this.groundPlatformHeight = 300; // Much taller ground platform
     this.groundPlatformWidth = 200; // Much taller ground platform
     this.platformColor = 0x212121;
     this.levelWidth = window.innerWidth; // Single screen width like Level 1
@@ -17,6 +17,8 @@ export class Level10Scene extends BaseScene {
   loadLevelAssets() {
     // Load Level 10 specific background
     this.load.image("background10", "/background 1/orig_big10.png");
+    // Load spike image
+    this.load.image("spike", "/Spike.png");
   }
 
   create() {
@@ -28,11 +30,68 @@ export class Level10Scene extends BaseScene {
     // Make door visible first - position it on screen
     this.door.x = window.innerWidth - 200;
     this.door.y = window.innerHeight - 200;
+
+    // Create spike images below the floating steps
+    const leftPlatformEnd = this.groundPlatformWidth;
+    const rightPlatformStart = window.innerWidth - 200 - 200;
+    const gapWidth = rightPlatformStart - leftPlatformEnd;
+    const spikeWidth = 20; // Width of each spike image
+    const spikeCount = Math.ceil(gapWidth / spikeWidth);
+
+    // Add spike images
+    for (let i = 0; i < spikeCount; i++) {
+      const x = leftPlatformEnd + (i * spikeWidth);
+      const spike = this.add.image(x, window.innerHeight, "spike");
+      spike.setOrigin(0, 1);
+      spike.setDepth(11);
+    }
+
+    // Create invisible collision rectangle for spikes
+    this.spikeCollider = this.add.rectangle(leftPlatformEnd + gapWidth / 2, window.innerHeight - 10, gapWidth, 20);
+    this.spikeCollider.setDepth(10);
+    this.physics.add.existing(this.spikeCollider, true);
+
+    // Add collision detection between player and spikes
+    this.physics.add.overlap(this.player, this.spikeCollider, this.handleSpikeCollision, null, this);
+  }
+
+  handleSpikeCollision() {
+    if (!this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
+    }
   }
 
   createPlatforms() {
     // Right platform (same height as left platform)
     this.createPlatform(window.innerWidth - 200, window.innerHeight - 100, 400, 200);
+
+    // Four floating steps from left platform to right platform (all at same height)
+    const leftPlatformEnd = this.groundPlatformWidth;
+    const rightPlatformStart = window.innerWidth - 200 - 200;
+    const gapWidth = rightPlatformStart - leftPlatformEnd;
+    const stepSpacing = gapWidth / 4.5; // More spacing between steps
+    const stepHeight = window.innerHeight - 300;
+    const leftOffset = 50; // Shift all steps to the left
+
+    // Step 1
+    this.createPlatform(leftPlatformEnd + stepSpacing - leftOffset, stepHeight, 120, 20);
+
+    // Step 2
+    this.createPlatform(leftPlatformEnd + stepSpacing * 2 - leftOffset, stepHeight, 120, 20);
+
+    // Step 3
+    this.createPlatform(leftPlatformEnd + stepSpacing * 3 - leftOffset, stepHeight, 120, 20);
+
+    // Step 4
+    this.createPlatform(leftPlatformEnd + stepSpacing * 4 - leftOffset, stepHeight, 120, 20);
   }
 
   update() {
