@@ -26,8 +26,8 @@ export class Level6Scene extends BaseScene {
     this.player.y = window.innerHeight - 700;
 
     // Make door visible first - position it on screen
-    this.door.x = 1300;
-    this.door.y = window.innerHeight - 102;
+    this.door.x = 1350;
+    this.door.y = window.innerHeight - 605 ; // Position on top of the last step
   }
 
   createPlatforms() {
@@ -36,31 +36,25 @@ export class Level6Scene extends BaseScene {
     // Step 1
     this.createPlatform(300, 650, 200, 200);
 
-    // Step 2 - Disappearing step (trap)
-    this.disappearingStep = this.add.rectangle(480, 600, 200, 280, 0x212121);
-    this.physics.add.existing(this.disappearingStep, true);
-    this.platforms.add(this.disappearingStep);
+    // Step 2 - Solid step
+    this.createPlatform(480, 600, 200, 280);
 
     this.createPlatform(680, 600, 200, 460);
 
-    // Step 4 - Second disappearing step (trap)
-    this.disappearingStep2 = this.add.rectangle(880, 600, 200, 620, 0x212121);
-    this.physics.add.existing(this.disappearingStep2, true);
-    this.platforms.add(this.disappearingStep2);
+    // Step 4 - Solid step
+    this.createPlatform(880, 600, 200, 620);
 
     this.createPlatform(1080, 600, 200, 780);
-    this.createPlatform(1280, 600, 200, 920);
+    this.createPlatform(1280, 600, 200, 940);
+    this.createPlatform(1480, 600, 200, 940);
 
-    // Track if steps have been touched
-    this.stepTouched = false;
-    this.step2Touched = false;
   }
 
   update() {
     // Override jump power for this level
     if (!this.levelComplete) {
       const speed = 250;
-      const jumpPower = -450; // Increased jump power for this level
+      const jumpPower = -430; // Increased jump power for this level
 
       this.isOnGround = this.player.body.touching.down || this.player.body.blocked.down;
 
@@ -125,36 +119,6 @@ export class Level6Scene extends BaseScene {
             this.onLevelComplete();
           });
         });
-      }
-    }
-
-    // Check if player is standing on the first disappearing step
-    if (!this.stepTouched && this.disappearingStep && this.player.body.touching.down) {
-      // Check if player is overlapping with the disappearing step
-      const playerBounds = this.player.getBounds();
-      const stepBounds = this.disappearingStep.getBounds();
-
-      if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, stepBounds)) {
-        this.stepTouched = true;
-
-        // Remove from platforms group and destroy
-        this.platforms.remove(this.disappearingStep);
-        this.disappearingStep.destroy();
-      }
-    }
-
-    // Check if player is standing on the second disappearing step
-    if (!this.step2Touched && this.disappearingStep2 && this.player.body.touching.down) {
-      // Check if player is overlapping with the second disappearing step
-      const playerBounds = this.player.getBounds();
-      const stepBounds = this.disappearingStep2.getBounds();
-
-      if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, stepBounds)) {
-        this.step2Touched = true;
-
-        // Remove from platforms group and destroy
-        this.platforms.remove(this.disappearingStep2);
-        this.disappearingStep2.destroy();
       }
     }
 
