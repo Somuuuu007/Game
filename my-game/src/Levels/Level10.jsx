@@ -81,17 +81,25 @@ export class Level10Scene extends BaseScene {
     const stepHeight = window.innerHeight - 300;
     const leftOffset = 50; // Shift all steps to the left
 
-    // Step 1
-    this.createPlatform(leftPlatformEnd + stepSpacing - leftOffset, stepHeight, 120, 20);
+    // Step 1 - invisible by default
+    this.step1 = this.createPlatform(leftPlatformEnd + stepSpacing - leftOffset, stepHeight, 120, 20);
+    this.step1.setAlpha(0); // Make invisible
+    this.step1Visible = false;
 
-    // Step 2
-    this.createPlatform(leftPlatformEnd + stepSpacing * 2 - leftOffset, stepHeight, 120, 20);
+    // Step 2 - invisible by default
+    this.step2 = this.createPlatform(leftPlatformEnd + stepSpacing * 2 - leftOffset, stepHeight, 120, 20);
+    this.step2.setAlpha(0); // Make invisible
+    this.step2Visible = false;
 
-    // Step 3
-    this.createPlatform(leftPlatformEnd + stepSpacing * 3 - leftOffset, stepHeight, 120, 20);
+    // Step 3 - invisible by default
+    this.step3 = this.createPlatform(leftPlatformEnd + stepSpacing * 3 - leftOffset, stepHeight, 120, 20);
+    this.step3.setAlpha(0); // Make invisible
+    this.step3Visible = false;
 
-    // Step 4
-    this.createPlatform(leftPlatformEnd + stepSpacing * 4 - leftOffset, stepHeight, 120, 20);
+    // Step 4 - invisible by default
+    this.step4 = this.createPlatform(leftPlatformEnd + stepSpacing * 4 - leftOffset, stepHeight, 120, 20);
+    this.step4.setAlpha(0); // Make invisible
+    this.step4Visible = false;
   }
 
   update() {
@@ -163,6 +171,47 @@ export class Level10Scene extends BaseScene {
             this.onLevelComplete();
           });
         });
+      }
+    }
+
+    // Check if player lands on invisible steps and make them visible
+    if (this.player.body.touching.down) {
+      const playerBounds = this.player.getBounds();
+
+      // Check step 1
+      if (!this.step1Visible && this.step1) {
+        const step1Bounds = this.step1.getBounds();
+        if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, step1Bounds)) {
+          this.step1Visible = true;
+          this.step1.setAlpha(1); // Make visible
+        }
+      }
+
+      // Check step 2
+      if (!this.step2Visible && this.step2) {
+        const step2Bounds = this.step2.getBounds();
+        if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, step2Bounds)) {
+          this.step2Visible = true;
+          this.step2.setAlpha(1); // Make visible
+        }
+      }
+
+      // Check step 3
+      if (!this.step3Visible && this.step3) {
+        const step3Bounds = this.step3.getBounds();
+        if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, step3Bounds)) {
+          this.step3Visible = true;
+          this.step3.setAlpha(1); // Make visible
+        }
+      }
+
+      // Check step 4
+      if (!this.step4Visible && this.step4) {
+        const step4Bounds = this.step4.getBounds();
+        if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, step4Bounds)) {
+          this.step4Visible = true;
+          this.step4.setAlpha(1); // Make visible
+        }
       }
     }
 
