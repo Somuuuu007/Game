@@ -31,7 +31,7 @@ export class Level8Scene extends BaseScene {
 
     // Create spike graphics for the gap between platforms
     this.spikes = this.add.graphics();
-    this.spikes.fillStyle(0x212121, 1);
+    this.spikes.fillStyle(0x212121, 1); // Silver color
     this.spikes.setDepth(11);
 
     // Draw small triangular spikes in the gap at the bottom
@@ -74,6 +74,20 @@ export class Level8Scene extends BaseScene {
     }
   }
 
+  handleStep3SpikeCollision() {
+    if (!this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
+    }
+  }
+
   createPlatforms() {
     // Create matching platforms on left and right sides
 
@@ -82,6 +96,53 @@ export class Level8Scene extends BaseScene {
 
     // Right platform (same height and width as left)
     this.createPlatform(window.innerWidth - 200, window.innerHeight - 100, 400, 200);
+
+    // Floating steps in the gap between left and right platforms
+    const gapStart = 400;
+    const gapEnd = window.innerWidth - 400;
+    const gapWidth = gapEnd - gapStart;
+    const stepSpacing = gapWidth / 4; // Divide gap into 4 sections for 3 steps
+
+    // Step 1 (floating)
+    this.createPlatform(gapStart + stepSpacing, window.innerHeight - 250, 150, 20);
+
+    // Step 2 (floating)
+    this.createPlatform(gapStart + stepSpacing * 2, window.innerHeight - 350, 150, 20);
+
+    // Step 3 (floating) - store reference for trap detection
+    this.step3X = gapStart + stepSpacing * 3;
+    this.step3Y = window.innerHeight - 250;
+    this.step3 = this.createPlatform(this.step3X, this.step3Y, 150, 20);
+
+    // Create invisible spikes on step 3
+    this.step3Spikes = this.add.graphics();
+    this.step3Spikes.fillStyle(0xC0C0C0, 1); // Silver color
+    this.step3Spikes.setDepth(12);
+    this.step3Spikes.setVisible(false); // Start invisible
+
+    // Draw spikes on step 3
+    const spikeWidth = 15;
+    const spikeHeight = 20;
+    const spikeCount = Math.ceil(150 / spikeWidth);
+    const step3Left = this.step3X - 75; // Platform is 150 wide, centered
+
+    for (let i = 0; i < spikeCount; i++) {
+      const x = step3Left + (i * spikeWidth);
+      this.step3Spikes.fillTriangle(
+        x, this.step3Y - 10,                    // Left point
+        x + spikeWidth, this.step3Y - 10,       // Right point
+        x + spikeWidth / 2, this.step3Y - 10 - spikeHeight // Top point (tip)
+      );
+    }
+
+    // Track if step 3 has been triggered
+    this.step3Triggered = false;
+
+    // Create spike collision area (invisible initially)
+    this.step3SpikeCollider = this.add.rectangle(this.step3X, this.step3Y - 20, 150, 30);
+    this.step3SpikeCollider.setDepth(10);
+    this.physics.add.existing(this.step3SpikeCollider, true);
+    this.step3SpikeCollider.body.enable = false; // Disable collision initially
   }
 
   update() {
@@ -153,6 +214,26 @@ export class Level8Scene extends BaseScene {
             this.onLevelComplete();
           });
         });
+      }
+    }
+
+    // Check if player touches step 3 and trigger spikes
+    if (!this.step3Triggered && this.player.body.touching.down) {
+      const playerBounds = this.player.getBounds();
+      const step3Bounds = this.step3.getBounds();
+
+      if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, step3Bounds)) {
+        this.step3Triggered = true;
+
+        // Make spikes visible
+        this.step3Spikes.setVisible(true);
+
+        // Enable spike collision
+        this.step3SpikeCollider.body.enable = true;
+        this.physics.add.overlap(this.player, this.step3SpikeCollider, this.handleStep3SpikeCollision, null, this);
+
+        // Kill player immediately
+        this.handleStep3SpikeCollision();
       }
     }
 
