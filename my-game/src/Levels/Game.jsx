@@ -7,6 +7,7 @@ import { Level4Scene } from "./Level4";
 import { Level5Scene } from "./Level5";
 import { Level6Scene } from "./Level6";
 import { Level7Scene } from "./Level7";
+import { Level8Scene } from "./Level8";
 
 const Game = () => {
   useEffect(() => {
@@ -14,7 +15,7 @@ const Game = () => {
 
     const createGame = () => {
       // Get current level from localStorage, default to Level1
-      const currentLevel = localStorage.getItem('currentLevel') || 'Level1';
+      const currentLevel = localStorage.getItem('currentLevel');
 
       const config = {
         type: Phaser.AUTO,
@@ -28,7 +29,7 @@ const Game = () => {
             debug: false,
           },
         },
-        scene: [ Level7Scene],
+        scene: [ Level8Scene],
       };
 
       game = new Phaser.Game(config);
