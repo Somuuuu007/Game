@@ -23,7 +23,7 @@ export class Level8Scene extends BaseScene {
     super.create();
 
     // Adjust player spawn position for the taller ground
-    this.player.y = window.innerHeight - 700;
+    this.player.y = window.innerHeight - 400;
 
     // Make door visible first - position it on screen (above right platform)
     this.door.x = window.innerWidth - 200;
@@ -88,6 +88,20 @@ export class Level8Scene extends BaseScene {
     }
   }
 
+  handleFallingObjectCollision() {
+    if (!this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
+    }
+  }
+
   createPlatforms() {
     // Create matching platforms on left and right sides
 
@@ -103,8 +117,14 @@ export class Level8Scene extends BaseScene {
     const gapWidth = gapEnd - gapStart;
     const stepSpacing = gapWidth / 4; // Divide gap into 4 sections for 3 steps
 
-    // Step 1 (floating)
-    this.createPlatform(gapStart + stepSpacing, window.innerHeight - 250, 150, 20);
+    // Step 1 (floating) - store reference for trap detection
+    this.step1X = gapStart + stepSpacing;
+    this.step1Y = window.innerHeight - 250;
+    this.step1 = this.createPlatform(this.step1X, this.step1Y, 150, 20);
+
+    // Track if step 1 has been triggered
+    this.step1Triggered = false;
+    this.fallingObject = null;
 
     // Step 2 (floating)
     this.createPlatform(gapStart + stepSpacing * 2, window.innerHeight - 350, 150, 20);
@@ -214,6 +234,41 @@ export class Level8Scene extends BaseScene {
             this.onLevelComplete();
           });
         });
+      }
+    }
+
+    // Check if player touches step 1 and trigger falling object
+    if (!this.step1Triggered && this.player.body.touching.down) {
+      const playerBounds = this.player.getBounds();
+      const step1Bounds = this.step1.getBounds();
+
+      if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, step1Bounds)) {
+        this.step1Triggered = true;
+
+        // Create falling circular object above step 1
+        this.fallingObject = this.add.circle(this.step1X, 0, 40, 0x000000); // Black circle, radius 40
+        this.physics.add.existing(this.fallingObject);
+        this.fallingObject.body.setVelocityY(400); // Fall speed
+        this.fallingObject.body.setBounce(0.7); // Bounce when hitting surfaces
+        this.fallingObject.body.setCollideWorldBounds(true); // Don't go off screen
+        this.fallingObject.setDepth(15);
+
+        // Make it collide with platforms
+        this.physics.add.collider(this.fallingObject, this.platforms);
+      }
+    }
+
+    // Update falling object and check collision
+    if (this.fallingObject && !this.levelComplete) {
+      // Check if falling object hits the player
+      const distanceToPlayer = Phaser.Math.Distance.Between(
+        this.fallingObject.x, this.fallingObject.y,
+        this.player.x, this.player.y
+      );
+
+      // Kill player if they're within 60 pixels radius (larger kill area)
+      if (distanceToPlayer < 60) {
+        this.handleFallingObjectCollision();
       }
     }
 
