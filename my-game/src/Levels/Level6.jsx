@@ -75,7 +75,7 @@ export class Level6Scene extends BaseScene {
     // Create individual steps with custom properties - these will move upward when stepped on
 
     // Step 1
-    this.step1 = this.createPlatform(300, 650, 200, 200);
+    this.step1 = this.createPlatform(290, 650, 180, 200);
     this.step1.moving = false;
     this.step1.activated = false;
 
