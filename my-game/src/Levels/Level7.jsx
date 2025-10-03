@@ -22,15 +22,62 @@ export class Level7Scene extends BaseScene {
   create() {
     super.create();
 
-    // Adjust player spawn position for the taller ground
-    this.player.y = window.innerHeight - 700;
+    // Adjust player spawn position - lower to avoid top spikes
+    this.player.y = window.innerHeight - 650;
 
     // Make door visible first - position it on screen
-    this.door.x = 1300;
-    this.door.y = window.innerHeight - 102;
+    this.door.x = 1200;
+    this.door.y = window.innerHeight - 200;
 
     // Tilt the game (rotate camera) at the start
     this.cameras.main.setAngle(180);
+
+    // Define the midpoint of the screen (divides left and right halves)
+    this.screenMidpoint = window.innerWidth / 2;
+
+    // Track which half the player is in
+    this.inRightHalf = false;
+
+    // Create spike graphics for top boundary (death zone)
+    this.spikes = this.add.graphics();
+    this.spikes.fillStyle(0x212121, 1);
+    this.spikes.setDepth(11);
+
+    // Draw triangular spikes along the top boundary
+    const spikeWidth = 30;
+    const spikeHeight = 40;
+    const topSpikeCount = Math.ceil(window.innerWidth / spikeHeight);
+
+    for (let i = 0; i < topSpikeCount; i++) {
+      const x = i * spikeHeight;
+      this.spikes.fillTriangle(
+        x, 0,                           // Left top point
+        x + spikeHeight, 0,             // Right top point
+        x + spikeHeight / 2, spikeWidth // Bottom point (tip of spike)
+      );
+    }
+
+    // Create invisible collision rectangle for top spikes
+    this.topSpikeCollider = this.add.rectangle(window.innerWidth / 2, 15, window.innerWidth, 30);
+    this.topSpikeCollider.setDepth(10);
+    this.physics.add.existing(this.topSpikeCollider, true);
+
+    // Add collision detection between player and top spikes
+    this.physics.add.overlap(this.player, this.topSpikeCollider, this.handleSpikeCollision, null, this);
+  }
+
+  handleSpikeCollision() {
+    if (!this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
+    }
   }
 
   createPlatforms() {
@@ -39,18 +86,22 @@ export class Level7Scene extends BaseScene {
     // Step 1
     this.createPlatform(280, 500, 200, window.innerHeight - 150);
 
-    // Step 2 - Disappearing step (trap)
-    this.disappearingStep = this.add.rectangle(480, 600, 200, window.innerHeight - 120, 0x212121);
-    this.physics.add.existing(this.disappearingStep, true);
-    this.platforms.add(this.disappearingStep);
-
-
-
-    // Track if step has been touched
-    this.stepTouched = false;
+    // Step 2 - Solid step
+    this.createPlatform(480, 600, 200, window.innerHeight - 120);
   }
 
   update() {
+    // Check which half of the screen the player is in and adjust gravity
+    if (this.player.x > this.screenMidpoint && !this.inRightHalf) {
+      // Player entered right half - reverse gravity (upward)
+      this.inRightHalf = true;
+      this.physics.world.gravity.y = -200;
+    } else if (this.player.x <= this.screenMidpoint && this.inRightHalf) {
+      // Player returned to left half - normal gravity (downward)
+      this.inRightHalf = false;
+      this.physics.world.gravity.y = 1000;
+    }
+
     // Override jump power for this level
     if (!this.levelComplete) {
       const speed = 250;
