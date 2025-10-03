@@ -133,9 +133,16 @@ export class Level7Scene extends BaseScene {
       }
 
       // Jumping with increased power
-      if ((Phaser.Input.Keyboard.JustDown(this.spaceKey) || Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.wKey)) && this.isOnGround) {
-        this.player.setVelocityY(jumpPower);
-        this.player.play("jump");
+      if (Phaser.Input.Keyboard.JustDown(this.spaceKey) || Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.wKey)) {
+        if (this.isOnGround) {
+          // Normal jump when on ground
+          this.player.setVelocityY(jumpPower);
+          this.player.play("jump");
+        } else if (this.inRightHalf) {
+          // Small jump in mid-air on right side (upside-down gravity zone)
+          this.player.setVelocityY(150); // Small downward velocity (which appears as small upward jump when flipped)
+          this.player.play("jump");
+        }
       }
 
       if (!this.isOnGround && this.player.anims.currentAnim.key !== "jump") {
