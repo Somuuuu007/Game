@@ -95,7 +95,7 @@ export class Level7Scene extends BaseScene {
     if (this.player.x > this.screenMidpoint && !this.inRightHalf) {
       // Player entered right half - reverse gravity (upward)
       this.inRightHalf = true;
-      this.physics.world.gravity.y = -200;
+      this.physics.world.gravity.y = -300;
     } else if (this.player.x <= this.screenMidpoint && this.inRightHalf) {
       // Player returned to left half - normal gravity (downward)
       this.inRightHalf = false;
