@@ -13,7 +13,7 @@ const Game = () => {
 
     const createGame = () => {
       // Get current level from localStorage, default to Level1
-      const currentLevel = localStorage.getItem('currentLevel') || 'Level1';
+      const currentLevel = localStorage.getItem('Level6');
 
       const config = {
         type: Phaser.AUTO,
@@ -27,7 +27,7 @@ const Game = () => {
             debug: false,
           },
         },
-        scene: [Level1Scene, Level2Scene, Level3Scene, Level4Scene, Level5Scene, Level6Scene],
+        scene: [ Level6Scene],
       };
 
       game = new Phaser.Game(config);
