@@ -38,16 +38,16 @@ export class Level7Scene extends BaseScene {
     // Track which half the player is in
     this.inRightHalf = false;
 
-    // Create spike graphics for top boundary (death zone)
+    // Create spike graphics for boundaries (death zones)
     this.spikes = this.add.graphics();
     this.spikes.fillStyle(0x212121, 1);
     this.spikes.setDepth(11);
 
-    // Draw triangular spikes along the top boundary
     const spikeWidth = 30;
     const spikeHeight = 40;
-    const topSpikeCount = Math.ceil(window.innerWidth / spikeHeight);
 
+    // Top boundary spikes
+    const topSpikeCount = Math.ceil(window.innerWidth / spikeHeight);
     for (let i = 0; i < topSpikeCount; i++) {
       const x = i * spikeHeight;
       this.spikes.fillTriangle(
@@ -57,13 +57,46 @@ export class Level7Scene extends BaseScene {
       );
     }
 
-    // Create invisible collision rectangle for top spikes
+    // Bottom boundary spikes
+    const bottomSpikeCount = Math.ceil(window.innerWidth / spikeHeight);
+    for (let i = 0; i < bottomSpikeCount; i++) {
+      const x = i * spikeHeight;
+      this.spikes.fillTriangle(
+        x, window.innerHeight,                    // Left bottom point
+        x + spikeHeight, window.innerHeight,      // Right bottom point
+        x + spikeHeight / 2, window.innerHeight - spikeWidth // Top point (tip of spike)
+      );
+    }
+
+    // Right boundary spikes
+    const rightSpikeCount = Math.ceil(window.innerHeight / spikeHeight);
+    for (let i = 0; i < rightSpikeCount; i++) {
+      const y = i * spikeHeight;
+      this.spikes.fillTriangle(
+        window.innerWidth, y,                    // Top right point
+        window.innerWidth, y + spikeHeight,      // Bottom right point
+        window.innerWidth - spikeWidth, y + spikeHeight / 2 // Left point (tip of spike)
+      );
+    }
+
+    // Create invisible collision rectangles for all spike boundaries
+    // Top boundary
     this.topSpikeCollider = this.add.rectangle(window.innerWidth / 2, 15, window.innerWidth, 30);
     this.topSpikeCollider.setDepth(10);
     this.physics.add.existing(this.topSpikeCollider, true);
-
-    // Add collision detection between player and top spikes
     this.physics.add.overlap(this.player, this.topSpikeCollider, this.handleSpikeCollision, null, this);
+
+    // Bottom boundary
+    this.bottomSpikeCollider = this.add.rectangle(window.innerWidth / 2, window.innerHeight - 15, window.innerWidth, 30);
+    this.bottomSpikeCollider.setDepth(10);
+    this.physics.add.existing(this.bottomSpikeCollider, true);
+    this.physics.add.overlap(this.player, this.bottomSpikeCollider, this.handleSpikeCollision, null, this);
+
+    // Right boundary
+    this.rightSpikeCollider = this.add.rectangle(window.innerWidth - 15, window.innerHeight / 2, 30, window.innerHeight);
+    this.rightSpikeCollider.setDepth(10);
+    this.physics.add.existing(this.rightSpikeCollider, true);
+    this.physics.add.overlap(this.player, this.rightSpikeCollider, this.handleSpikeCollision, null, this);
   }
 
   handleSpikeCollision() {
