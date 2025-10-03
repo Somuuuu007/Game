@@ -27,7 +27,11 @@ export class Level9Scene extends BaseScene {
 
     // Create right platform with same height
     const rightPlatformX = window.innerWidth - 200;
-    this.createPlatform(rightPlatformX, window.innerHeight - this.groundPlatformHeight / 2, 400, this.groundPlatformHeight);
+    this.rightPlatform = this.createPlatform(rightPlatformX, window.innerHeight - this.groundPlatformHeight / 2, 400, this.groundPlatformHeight);
+
+    // Track if right platform rolling object has been spawned
+    this.rightRollingObjectSpawned = false;
+    this.rightRollingObject = null;
 
     // Create middle disappearing platform between left and right platforms
     const leftPlatformEnd = this.groundPlatformWidth;
@@ -121,9 +125,9 @@ export class Level9Scene extends BaseScene {
         this.middlePlatformStepped = true;
 
         // Create falling circular object after 0.5 second delay
-        this.time.delayedCall(200, () => {
+        this.time.delayedCall(100, () => {
           const fallingObjectX = this.middlePlatformX - 80; // Offset to the left
-          this.fallingObject = this.add.circle(fallingObjectX, 0, 40, 0x000000); // Black circle, radius 40
+          this.fallingObject = this.add.circle(fallingObjectX, 0, 40, 0x212121); // Same color as platform
           this.physics.add.existing(this.fallingObject);
           this.fallingObject.body.setVelocityY(400); // Fall speed
           this.fallingObject.body.setBounce(0.2); // Bounce when hitting surfaces
@@ -164,7 +168,7 @@ export class Level9Scene extends BaseScene {
         this.rollingObjectSpawned = true;
 
         // Create rolling circular object from left side of screen
-        this.rollingObject = this.add.circle(-50, window.innerHeight - 150, 40, 0x000000);
+        this.rollingObject = this.add.circle(-50, window.innerHeight - 150, 40, 0x212121);
         this.physics.add.existing(this.rollingObject);
         this.rollingObject.body.setVelocityX(450); // Roll speed to the right
         this.rollingObject.body.setAllowGravity(true);
@@ -176,10 +180,44 @@ export class Level9Scene extends BaseScene {
       }
     }
 
+    // Check if player lands on right platform and spawn rolling object from right
+    if (!this.rightRollingObjectSpawned && this.rightPlatform && this.player.body.touching.down) {
+      const playerBounds = this.player.getBounds();
+      const rightPlatformBounds = this.rightPlatform.getBounds();
+
+      if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, rightPlatformBounds)) {
+        this.rightRollingObjectSpawned = true;
+
+        // Create rolling circular object from right side of screen
+        this.rightRollingObject = this.add.circle(window.innerWidth + 50, window.innerHeight - 150, 40, 0x212121);
+        this.physics.add.existing(this.rightRollingObject);
+        this.rightRollingObject.body.setVelocityX(-450); // Roll speed to the left
+        this.rightRollingObject.body.setAllowGravity(true);
+        this.rightRollingObject.body.setBounce(0);
+        this.rightRollingObject.setDepth(15);
+
+        // Make it collide with platforms
+        this.physics.add.collider(this.rightRollingObject, this.platforms);
+      }
+    }
+
     // Check collision between rolling object and player
     if (this.rollingObject && !this.levelComplete) {
       const distanceToPlayer = Phaser.Math.Distance.Between(
         this.rollingObject.x, this.rollingObject.y,
+        this.player.x, this.player.y
+      );
+
+      // Kill player if they're within 60 pixels radius
+      if (distanceToPlayer < 60) {
+        this.handleRollingObjectCollision();
+      }
+    }
+
+    // Check collision between right rolling object and player
+    if (this.rightRollingObject && !this.levelComplete) {
+      const distanceToPlayer = Phaser.Math.Distance.Between(
+        this.rightRollingObject.x, this.rightRollingObject.y,
         this.player.x, this.player.y
       );
 
