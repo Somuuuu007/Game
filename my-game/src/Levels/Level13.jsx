@@ -21,6 +21,37 @@ export class Level13Scene extends BaseScene {
 
   create() {
     super.create();
+
+    // Create T-shaped pole at 1/4 of screen
+    const poleX = window.innerWidth / 4;
+    const poleColor = 0x212121; // Brown color for the pole
+    const groundTop = window.innerHeight - 120; // Top of the ground platform
+    const poleHeight = 200;
+
+    // Vertical part of the T (pole) - slim
+    const verticalPole = this.add.rectangle(poleX, groundTop - poleHeight / 2, 12, poleHeight, poleColor);
+    verticalPole.setDepth(10);
+
+    // Horizontal part of the T (top) - longer and slim
+    const horizontalPole = this.add.rectangle(poleX, groundTop - poleHeight, 100, 10, poleColor);
+    horizontalPole.setDepth(10);
+
+    // Add spikes on each end of horizontal pole
+    const spikeLeftX = poleX - 40; // Left end of horizontal pole
+    const spikeRightX = poleX + 40; // Right end of horizontal pole
+    const spikeY = groundTop - poleHeight + 21; // At the bottom edge of horizontal bar
+
+    // Left spike
+    const leftSpike = this.add.image(spikeLeftX, spikeY, "spike");
+    leftSpike.setOrigin(0.5, 0);
+    leftSpike.setAngle(180); // Point downward
+    leftSpike.setDepth(11);
+
+    // Right spike
+    const rightSpike = this.add.image(spikeRightX, spikeY, "spike");
+    rightSpike.setOrigin(0.5, 0);
+    rightSpike.setAngle(180); // Point downward
+    rightSpike.setDepth(11);
   }
 
   update() {
