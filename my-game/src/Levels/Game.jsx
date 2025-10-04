@@ -12,6 +12,7 @@ import { Level9Scene } from "./Level9";
 import { Level10Scene } from "./Level10";
 import { Level11Scene } from "./Level11";
 import { Level12Scene } from "./Level12";
+import { Level13Scene } from "./Level13";
 
 const Game = () => {
   useEffect(() => {
@@ -33,7 +34,7 @@ const Game = () => {
             debug: false,
           },
         },
-        scene: [Level12Scene],
+        scene: [Level13Scene],
       };
 
       game = new Phaser.Game(config);
