@@ -11,8 +11,6 @@ export class Level12Scene extends BaseScene {
     this.platformColor = 0x212121;
     this.levelWidth = window.innerWidth; // Single screen width like Level 1
     this.doorX = 1380; // Door on the last step
-    this.spikeTrapTriggered = false; // Track if spike trap has been triggered
-    this.step3SpikesTrapTriggered = false; // Track if step 3 spikes have been triggered
   }
 
   loadLevelAssets() {
@@ -24,6 +22,10 @@ export class Level12Scene extends BaseScene {
 
   create() {
     super.create();
+
+    // Reset spike trap flags on level restart
+    this.spikeTrapTriggered = false;
+    this.step3SpikesTrapTriggered = false;
 
     // Adjust player spawn position
     this.player.y = window.innerHeight - 350;
