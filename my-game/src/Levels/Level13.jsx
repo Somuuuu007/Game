@@ -28,30 +28,42 @@ export class Level13Scene extends BaseScene {
     const groundTop = window.innerHeight - 120; // Top of the ground platform
     const poleHeight = 200;
 
-    // Vertical part of the T (pole) - slim
-    const verticalPole = this.add.rectangle(poleX, groundTop - poleHeight / 2, 12, poleHeight, poleColor);
-    verticalPole.setDepth(10);
+    // Create a container for the entire pole structure
+    this.poleContainer = this.add.container(poleX, groundTop);
 
-    // Horizontal part of the T (top) - longer and slim
-    const horizontalPole = this.add.rectangle(poleX, groundTop - poleHeight, 100, 10, poleColor);
-    horizontalPole.setDepth(10);
+    // Vertical part of the T (pole) - slim (relative to container)
+    this.verticalPole = this.add.rectangle(0, -poleHeight / 2, 12, poleHeight, poleColor);
+    this.verticalPole.setDepth(10);
 
-    // Add spikes on each end of horizontal pole
-    const spikeLeftX = poleX - 40; // Left end of horizontal pole
-    const spikeRightX = poleX + 40; // Right end of horizontal pole
-    const spikeY = groundTop - poleHeight + 21; // At the bottom edge of horizontal bar
+    // Horizontal part of the T (top) - longer and slim (relative to container)
+    this.horizontalPole = this.add.rectangle(0, -poleHeight, 100, 10, poleColor);
+    this.horizontalPole.setDepth(10);
+
+    // Add spikes on each end of horizontal pole (relative to container)
+    const spikeLeftX = -40; // Left end of horizontal pole
+    const spikeRightX = 40; // Right end of horizontal pole
+    const spikeY = -poleHeight + 21; // At the bottom edge of horizontal bar
 
     // Left spike
-    const leftSpike = this.add.image(spikeLeftX, spikeY, "spike");
-    leftSpike.setOrigin(0.5, 0);
-    leftSpike.setAngle(180); // Point downward
-    leftSpike.setDepth(11);
+    this.leftSpike = this.add.image(spikeLeftX, spikeY, "spike");
+    this.leftSpike.setOrigin(0.5, 0);
+    this.leftSpike.setAngle(180); // Point downward
+    this.leftSpike.setDepth(11);
+    this.leftSpike.falling = false;
 
     // Right spike
-    const rightSpike = this.add.image(spikeRightX, spikeY, "spike");
-    rightSpike.setOrigin(0.5, 0);
-    rightSpike.setAngle(180); // Point downward
-    rightSpike.setDepth(11);
+    this.rightSpike = this.add.image(spikeRightX, spikeY, "spike");
+    this.rightSpike.setOrigin(0.5, 0);
+    this.rightSpike.setAngle(180); // Point downward
+    this.rightSpike.setDepth(11);
+    this.rightSpike.falling = false;
+
+    // Add all elements to container
+    this.poleContainer.add([this.verticalPole, this.horizontalPole, this.leftSpike, this.rightSpike]);
+
+    this.poleX = poleX;
+    this.poleFallen = false;
+    this.leftSpikeTriggered = false;
   }
 
   update() {
@@ -124,6 +136,103 @@ export class Level13Scene extends BaseScene {
           });
         });
       }
+    }
+
+    // Pole falling logic - when player crosses center
+    if (!this.poleFallen && this.player.x > this.poleX) {
+      this.poleFallen = true;
+
+      // Rotate entire pole container to the right (90 degrees)
+      this.tweens.add({
+        targets: this.poleContainer,
+        angle: 90,
+        duration: 2500,
+        ease: 'Power2',
+        onComplete: () => {
+          // Create solid platforms at the fallen pole's position
+          const groundTop = window.innerHeight - 120;
+          const poleHeight = 200;
+
+          // Horizontal platform for the vertical pole (now horizontal after 90 degree rotation)
+          this.fallenPolePlatform = this.add.rectangle(
+            this.poleX + poleHeight / 2,
+            groundTop - 6,
+            poleHeight,
+            12,
+            0x212121
+          );
+          this.fallenPolePlatform.setAlpha(0); // Make it invisible (visual is from container)
+          this.physics.add.existing(this.fallenPolePlatform, true);
+          this.physics.add.collider(this.player, this.fallenPolePlatform);
+
+          // Horizontal platform for the horizontal bar (now also horizontal at the top)
+          this.fallenHorizontalBarPlatform = this.add.rectangle(
+            this.poleX + poleHeight,
+            groundTop - 56,
+            10,
+            2,
+            0x212121
+          );
+          this.fallenHorizontalBarPlatform.setAlpha(0); // Make it invisible
+          this.physics.add.existing(this.fallenHorizontalBarPlatform, true);
+          this.physics.add.collider(this.player, this.fallenHorizontalBarPlatform);
+        }
+      });
+    }
+
+    // Left spike falling logic
+    if (!this.leftSpikeTriggered && !this.leftSpike.falling) {
+      // Get the world position of the left spike from the container
+      const spikeWorldX = this.poleContainer.x + this.leftSpike.x;
+      const distanceToLeftSpike = Math.abs(this.player.x - spikeWorldX);
+
+      // Trigger when player is within 50px of left spike
+      if (distanceToLeftSpike < 40) {
+        this.leftSpikeTriggered = true;
+        this.leftSpike.falling = true;
+
+        // Remove spike from container and add to world
+        this.poleContainer.remove(this.leftSpike);
+
+        // Set spike to world position
+        this.leftSpike.setPosition(spikeWorldX, this.poleContainer.y + this.leftSpike.y);
+
+        // Add physics to the spike
+        this.physics.add.existing(this.leftSpike);
+        this.leftSpike.body.setVelocityY(600); // Fast falling speed
+        this.leftSpike.body.setAllowGravity(false);
+      }
+    }
+
+    // Check collision with falling left spike
+    if (this.leftSpike.falling && !this.levelComplete) {
+      const distanceToPlayer = Phaser.Math.Distance.Between(
+        this.leftSpike.x, this.leftSpike.y,
+        this.player.x, this.player.y
+      );
+
+      if (distanceToPlayer < 40) {
+        this.handleSpikeCollision();
+      }
+
+      // Destroy spike if it goes off screen
+      if (this.leftSpike.y > window.innerHeight + 100) {
+        this.leftSpike.destroy();
+      }
+    }
+  }
+
+  handleSpikeCollision() {
+    if (!this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
     }
   }
 
