@@ -28,6 +28,8 @@ export class Level14Scene extends BaseScene {
 
     // Track spike trigger state
     this.wallSpikesTriggered = false;
+    this.groundSpikesTriggered = false;
+    this.groundSpikes2Triggered = false;
   }
 
   createPlatforms() {
@@ -75,6 +77,48 @@ export class Level14Scene extends BaseScene {
     this.wallSpikeCollider2.setDepth(10);
     this.physics.add.existing(this.wallSpikeCollider2, true);
 
+    // Create 4 hidden spikes at 1/4 distance of ground platform
+    const groundY = window.innerHeight - this.groundPlatformHeight;
+    const groundSpikeX = window.innerWidth / 4;
+    const groundSpikeSpacing = 20;
+
+    this.groundSpikes = [];
+    this.groundSpikeColliders = [];
+
+    for (let i = 0; i < 4; i++) {
+      const spike = this.add.image(groundSpikeX + (i * groundSpikeSpacing), groundY, "spike");
+      spike.setOrigin(0.5, 1);
+      spike.setAngle(0); // Point up
+      spike.setDepth(11);
+      spike.setAlpha(0); // Invisible by default
+      this.groundSpikes.push(spike);
+
+      const collider = this.add.rectangle(groundSpikeX + (i * groundSpikeSpacing), groundY - 10, 15, 15);
+      collider.setDepth(10);
+      this.physics.add.existing(collider, true);
+      this.groundSpikeColliders.push(collider);
+    }
+
+    // Create 4 hidden spikes at 3/4 distance of ground platform
+    const groundSpike2X = (window.innerWidth * 3) / 4;
+
+    this.groundSpikes2 = [];
+    this.groundSpikeColliders2 = [];
+
+    for (let i = 0; i < 4; i++) {
+      const spike = this.add.image(groundSpike2X + (i * groundSpikeSpacing), groundY, "spike");
+      spike.setOrigin(0.5, 1);
+      spike.setAngle(0); // Point up
+      spike.setDepth(11);
+      spike.setAlpha(0); // Invisible by default
+      this.groundSpikes2.push(spike);
+
+      const collider = this.add.rectangle(groundSpike2X + (i * groundSpikeSpacing), groundY - 10, 15, 15);
+      collider.setDepth(10);
+      this.physics.add.existing(collider, true);
+      this.groundSpikeColliders2.push(collider);
+    }
+
   }
 
   update() {
@@ -104,6 +148,72 @@ export class Level14Scene extends BaseScene {
         this.physics.add.overlap(this.player, this.wallSpikeCollider1, this.handleWallSpikeCollision, null, this);
         this.physics.add.overlap(this.player, this.wallSpikeCollider2, this.handleWallSpikeCollision, null, this);
       }
+    }
+
+    // Check if player is on ground and triggers ground spikes
+    if (!this.groundSpikesTriggered && !this.levelComplete) {
+      const isOnGround = this.player.body.touching.down || this.player.body.blocked.down;
+      const groundY = window.innerHeight - this.groundPlatformHeight;
+
+      // Check if player is on the ground platform
+      if (isOnGround && this.player.y > groundY - 100) {
+        // Check distance to the center of the spike cluster
+        const groundSpikeX = window.innerWidth / 4;
+        const distance = Math.abs(this.player.x - groundSpikeX);
+
+        // Trigger when player is within 10px of the spike area
+        if (distance < 50) {
+          this.groundSpikesTriggered = true;
+
+          // Make all spikes visible
+          this.groundSpikes.forEach(spike => spike.setAlpha(1));
+
+          // Add collision detection for all spikes
+          this.groundSpikeColliders.forEach(collider => {
+            this.physics.add.overlap(this.player, collider, this.handleGroundSpikeCollision, null, this);
+          });
+        }
+      }
+    }
+
+    // Check if player is on ground and triggers second set of ground spikes
+    if (!this.groundSpikes2Triggered && !this.levelComplete) {
+      const isOnGround = this.player.body.touching.down || this.player.body.blocked.down;
+      const groundY = window.innerHeight - this.groundPlatformHeight;
+
+      // Check if player is on the ground platform
+      if (isOnGround && this.player.y > groundY - 100) {
+        // Check distance to the center of the spike cluster
+        const groundSpike2X = (window.innerWidth * 3) / 4;
+        const distance = Math.abs(this.player.x - groundSpike2X);
+
+        // Trigger when player is within 50px of the spike area
+        if (distance < 50) {
+          this.groundSpikes2Triggered = true;
+
+          // Make all spikes visible
+          this.groundSpikes2.forEach(spike => spike.setAlpha(1));
+
+          // Add collision detection for all spikes
+          this.groundSpikeColliders2.forEach(collider => {
+            this.physics.add.overlap(this.player, collider, this.handleGroundSpikeCollision, null, this);
+          });
+        }
+      }
+    }
+  }
+
+  handleGroundSpikeCollision() {
+    if (!this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
     }
   }
 
