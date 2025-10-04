@@ -17,6 +17,7 @@ export class Level13Scene extends BaseScene {
     this.load.image("background13", "/background 1/orig_big13.png");
     // Load spike image
     this.load.image("spike", "/Spike.png");
+    // Load ball image (we'll use a circle for now)
   }
 
   create() {
@@ -64,6 +65,10 @@ export class Level13Scene extends BaseScene {
     this.poleX = poleX;
     this.poleFallen = false;
     this.leftSpikeTriggered = false;
+    this.ballWaveCount = 0; // Track how many ball waves have been triggered
+    this.balls = []; // Array to hold multiple balls
+    this.ballWave1Triggered = false;
+    this.ballWave2Triggered = false;
   }
 
   update() {
@@ -219,6 +224,74 @@ export class Level13Scene extends BaseScene {
       if (this.leftSpike.y > window.innerHeight + 100) {
         this.leftSpike.destroy();
       }
+    }
+
+    // First ball wave - when player reaches 3/4 of screen
+    if (!this.ballWave1Triggered && this.player.x >= window.innerWidth * 0.75) {
+      this.ballWave1Triggered = true;
+      this.ballWaveCount++;
+
+      // Create 1 ball
+      this.spawnBall(window.innerWidth - 100);
+    }
+
+    // Second ball wave - when player reaches 3/4 again (after going back)
+    if (this.ballWave1Triggered && !this.ballWave2Triggered && this.player.x >= window.innerWidth * 0.75 && this.balls.length === 0) {
+      this.ballWave2Triggered = true;
+      this.ballWaveCount++;
+
+      // Create 1 ball
+      this.spawnBall(window.innerWidth - 100);
+    }
+
+    // Destroy balls if they go off screen
+    for (let i = this.balls.length - 1; i >= 0; i--) {
+      const ball = this.balls[i];
+      if (ball && (ball.x < -100 || ball.x > window.innerWidth + 100)) {
+        ball.destroy();
+        this.balls.splice(i, 1);
+      }
+    }
+  }
+
+  spawnBall(startX) {
+    const groundTop = window.innerHeight - 120;
+    const ball = this.add.circle(startX, groundTop - 35, 30, 0x212121);
+    this.physics.add.existing(ball);
+    ball.body.setBounce(1, 0.3); // Full horizontal bounce, small vertical bounce
+    ball.body.setCollideWorldBounds(false);
+    ball.body.setVelocityX(-300); // Move left (rolling speed)
+    ball.body.setAllowGravity(true);
+
+    // Add collision with player
+    this.physics.add.overlap(this.player, ball, this.handleBallCollision, null, this);
+
+    // Add collision with ground
+    this.physics.add.collider(ball, this.platforms);
+
+    // Add collision with fallen pole platforms
+    if (this.fallenPolePlatform) {
+      this.physics.add.collider(ball, this.fallenPolePlatform);
+    }
+    if (this.fallenHorizontalBarPlatform) {
+      this.physics.add.collider(ball, this.fallenHorizontalBarPlatform);
+    }
+
+    this.balls.push(ball);
+    return ball;
+  }
+
+  handleBallCollision() {
+    if (!this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
     }
   }
 
