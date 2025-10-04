@@ -19,14 +19,35 @@ export class Level14Scene extends BaseScene {
 
   create() {
     super.create();
+
+    // Move player to spawn in top left corner room
+    this.player.x = 100;
+    this.player.y = 100;
+  }
+
+  createPlatforms() {
+    // Create a room in the top left corner
+    const roomWidth = 250;
+    const roomX = 100;
+    const roomY = 100;
+    const floorY = roomY + 75;
+
+    // Floor of the room
+    this.createPlatform(roomX, floorY, roomWidth, 20);
+
+    // Right wall (moved to the right with gap, extends to top of screen)
+    const wallHeight = roomY + 75 + 50; // Height from top to below floor
+    this.createPlatform(roomX + 200, wallHeight / 2, 20, wallHeight);
+
+    // Small platform at the right end of the floor (touching it)
+    const smallPlatformWidth = 80;
+    const smallPlatformX = roomX + (roomWidth / 2) - smallPlatformWidth / 2;
+    this.createPlatform(smallPlatformX, floorY - 15, smallPlatformWidth, 15);
+
   }
 
   update() {
     super.update();
-  }
-
-  createPlatforms() {
-    // Add Level 14 specific platforms here
   }
 
   onLevelComplete() {
