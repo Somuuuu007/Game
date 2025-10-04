@@ -42,7 +42,7 @@ export class Level14Scene extends BaseScene {
 
     // Right wall (moved to the right with gap, extends to top of screen)
     const wallHeight = roomY + 75 + 50; // Height from top to below floor
-    this.createPlatform(roomX + 230, wallHeight / 2, 20, wallHeight);
+    this.createPlatform(roomX + 210, wallHeight / 2, 20, wallHeight);
 
     // Small platform at the right end of the floor (touching it)
     const smallPlatformWidth = 80;
@@ -54,24 +54,24 @@ export class Level14Scene extends BaseScene {
     const wallBottomY = floorY;
     const spikeSpacing = 15;
 
-    this.wallSpike1 = this.add.image(wallX - 18, wallBottomY + 10, "spike");
+    this.wallSpike1 = this.add.image(wallX - 38, wallBottomY + 10, "spike");
     this.wallSpike1.setOrigin(0.5, 0.5);
     this.wallSpike1.setAngle(-90); // Point left
     this.wallSpike1.setDepth(11);
     this.wallSpike1.setAlpha(0); // Invisible by default
 
-    this.wallSpike2 = this.add.image(wallX - 18, wallBottomY + 10 + spikeSpacing, "spike");
+    this.wallSpike2 = this.add.image(wallX - 38, wallBottomY + 10 + spikeSpacing, "spike");
     this.wallSpike2.setOrigin(0.5, 0.5);
     this.wallSpike2.setAngle(-90); // Point left
     this.wallSpike2.setDepth(11);
     this.wallSpike2.setAlpha(0); // Invisible by default
 
     // Create collision rectangles for the spikes
-    this.wallSpikeCollider1 = this.add.rectangle(wallX - 18, wallBottomY + 10, 40, 40);
+    this.wallSpikeCollider1 = this.add.rectangle(wallX - 38, wallBottomY + 10, 40, 40);
     this.wallSpikeCollider1.setDepth(10);
     this.physics.add.existing(this.wallSpikeCollider1, true);
 
-    this.wallSpikeCollider2 = this.add.rectangle(wallX - 18, wallBottomY + 10 + spikeSpacing, 40, 40);
+    this.wallSpikeCollider2 = this.add.rectangle(wallX - 38, wallBottomY + 10 + spikeSpacing, 40, 40);
     this.wallSpikeCollider2.setDepth(10);
     this.physics.add.existing(this.wallSpikeCollider2, true);
 
