@@ -69,9 +69,12 @@ export class BaseScene extends Phaser.Scene {
     };
 
     // Ground platform - can be overridden by setting groundPlatformWidth/Height in child class
-    const groundWidth = this.groundPlatformWidth || levelWidth;
-    const groundHeight = this.groundPlatformHeight || 150;
-    this.createPlatform(groundWidth / 2, window.innerHeight - groundHeight / 2, groundWidth, groundHeight);
+    // Only create if groundPlatformHeight is not explicitly set to null
+    if (this.groundPlatformHeight !== null) {
+      const groundWidth = this.groundPlatformWidth || levelWidth;
+      const groundHeight = this.groundPlatformHeight || 150;
+      this.createPlatform(groundWidth / 2, window.innerHeight - groundHeight / 2, groundWidth, groundHeight);
+    }
 
     // Create level-specific platforms
     this.createPlatforms();

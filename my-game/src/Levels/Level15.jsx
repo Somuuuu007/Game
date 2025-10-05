@@ -6,7 +6,7 @@ export class Level15Scene extends BaseScene {
   constructor() {
     super("Level15");
     this.backgroundKey = "background15";
-    this.groundPlatformHeight = 80; // Smaller height for this level
+    this.groundPlatformHeight = null; // No continuous ground platform for this level
     this.platformColor = 0x212121; // Dark blue color for this level
     this.levelWidth = window.innerWidth; // Single screen width for this level
     this.doorX = window.innerWidth - 180; // Door near the end
@@ -24,6 +24,9 @@ export class Level15Scene extends BaseScene {
 
     // Move player spawn position a bit to the right
     this.player.x = 150;
+
+    // Fix door position to be on the rightmost floor section
+    this.door.y = window.innerHeight - 80;
 
     // Create spikes on the left wall (only in playable area)
     const wallThickness = 88;
@@ -149,7 +152,7 @@ export class Level15Scene extends BaseScene {
 
   createPlatforms() {
     // Create a closed room structure with walls on all sides
-    const wallThickness = 80; // Same as ground platform height
+    const wallThickness = 80;
 
     // Left wall
     this.createPlatform(
@@ -173,6 +176,37 @@ export class Level15Scene extends BaseScene {
       wallThickness / 2,
       window.innerWidth,
       wallThickness
+    );
+
+    // Bottom floor divided into 3 sections with gaps
+    const floorY = window.innerHeight - wallThickness / 2;
+    const floorHeight = wallThickness;
+    const totalWidth = window.innerWidth - (2 * wallThickness); // Width between left and right walls
+    const gapWidth = 100; // Gap between sections
+    const sectionWidth = (totalWidth - (2 * gapWidth)) / 3; // Divide remaining space into 3 sections
+
+    // Section 1 (leftmost)
+    this.createPlatform(
+      wallThickness + sectionWidth / 2,
+      floorY,
+      sectionWidth,
+      floorHeight
+    );
+
+    // Section 2 (middle)
+    this.createPlatform(
+      wallThickness + sectionWidth + gapWidth + sectionWidth / 2,
+      floorY,
+      sectionWidth,
+      floorHeight
+    );
+
+    // Section 3 (rightmost)
+    this.createPlatform(
+      wallThickness + (2 * sectionWidth) + (2 * gapWidth) + sectionWidth / 2,
+      floorY,
+      sectionWidth,
+      floorHeight
     );
   }
 
