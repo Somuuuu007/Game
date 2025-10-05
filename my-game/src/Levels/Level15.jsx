@@ -64,6 +64,39 @@ export class Level15Scene extends BaseScene {
     this.physics.add.overlap(this.player, this.leftSpikeCollider, this.handleSpikeCollision, null, this);
   }
 
+  spawnRollingBall() {
+    const floorY = window.innerHeight - 80;
+    const ballRadius = 25;
+
+    // Spawn ball from the right side
+    this.ball = this.add.circle(window.innerWidth - 100, floorY - ballRadius - 40, ballRadius, 0x212121);
+    this.physics.add.existing(this.ball);
+    this.ball.body.setBounce(0, 0); // No bouncing
+    this.ball.body.setCollideWorldBounds(false);
+    this.ball.body.setVelocityX(-400); // Roll left faster
+    this.ball.body.setAllowGravity(true);
+
+    // Add collision with platforms
+    this.physics.add.collider(this.ball, this.platforms);
+
+    // Add collision with player
+    this.physics.add.overlap(this.player, this.ball, this.handleBallCollision, null, this);
+  }
+
+  handleBallCollision() {
+    if (!this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
+    }
+  }
+
   handleSpikeCollision() {
     if (!this.levelComplete) {
       this.levelComplete = true;
@@ -100,6 +133,22 @@ export class Level15Scene extends BaseScene {
           }
         });
       }
+    }
+
+    // Spawn rolling ball when player gets near the door
+    if (!this.ballSpawned && !this.levelComplete) {
+      const distanceToDoor = Math.abs(this.player.x - this.door.x);
+
+      if (distanceToDoor < 150) {
+        this.ballSpawned = true;
+        this.spawnRollingBall();
+      }
+    }
+
+    // Destroy ball if it falls below screen
+    if (this.ball && this.ball.y > window.innerHeight + 100) {
+      this.ball.destroy();
+      this.ball = null;
     }
 
     // Check if player falls below the floor level to kill them
@@ -259,6 +308,10 @@ export class Level15Scene extends BaseScene {
       sectionWidth,
       floorHeight
     );
+
+    // Track ball state
+    this.ballSpawned = false;
+    this.ball = null;
   }
 
   onLevelComplete() {
