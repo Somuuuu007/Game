@@ -22,8 +22,9 @@ export class Level15Scene extends BaseScene {
   create() {
     super.create();
 
-    // Move player spawn position a bit to the right
-    this.player.x = 150;
+    // Move player spawn position to be safe on the left platform (away from spikes)
+    this.player.x = 200;
+    this.player.y = window.innerHeight - 200;
 
     // Fix door position to be on the rightmost floor section
     this.door.y = window.innerHeight - 80;
@@ -78,6 +79,20 @@ export class Level15Scene extends BaseScene {
   }
 
   update() {
+    // Check if player falls below the floor level to kill them
+    const floorY = window.innerHeight - 80;
+    if (!this.levelComplete && this.player.y > floorY + 50) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
+    }
+
     // Override with swapped controls for this level
     if (!this.levelComplete) {
       const speed = 300;
@@ -178,31 +193,31 @@ export class Level15Scene extends BaseScene {
       wallThickness
     );
 
-    // Bottom floor divided into 3 sections with gaps
+    // Bottom floor divided into 3 sections
     const floorY = window.innerHeight - wallThickness / 2;
     const floorHeight = wallThickness;
     const totalWidth = window.innerWidth - (2 * wallThickness); // Width between left and right walls
-    const gapWidth = 100; // Gap between sections
-    const sectionWidth = (totalWidth - (2 * gapWidth)) / 3; // Divide remaining space into 3 sections
+    const gapWidth = 100; // Gap width
+    const sectionWidth = (totalWidth - (2 * gapWidth)) / 3; // Each section width
 
-    // Section 1 (leftmost)
-    this.createPlatform(
+    // Section 1 (left platform)
+    this.leftPlatform = this.createPlatform(
       wallThickness + sectionWidth / 2,
       floorY,
       sectionWidth,
       floorHeight
     );
 
-    // Section 2 (middle)
-    this.createPlatform(
+    // Section 2 (middle platform)
+    this.middlePlatform = this.createPlatform(
       wallThickness + sectionWidth + gapWidth + sectionWidth / 2,
       floorY,
       sectionWidth,
       floorHeight
     );
 
-    // Section 3 (rightmost)
-    this.createPlatform(
+    // Section 3 (right platform)
+    this.rightPlatform = this.createPlatform(
       wallThickness + (2 * sectionWidth) + (2 * gapWidth) + sectionWidth / 2,
       floorY,
       sectionWidth,
