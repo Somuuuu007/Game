@@ -23,7 +23,7 @@ export class Level15Scene extends BaseScene {
     super.create();
 
     // Move player spawn position to be safe on the left platform (away from spikes)
-    this.player.x = 200;
+    this.player.x = 150;
     this.player.y = window.innerHeight - 200;
 
     // Fix door position to be on the rightmost floor section
@@ -52,11 +52,11 @@ export class Level15Scene extends BaseScene {
       this.leftSpikes.push(spike);
     }
 
-    // Create collision area for left wall spikes
+    // Create collision area for left wall spikes (very small collision area)
     this.leftSpikeCollider = this.add.rectangle(
-      wallThickness + 20,
+      wallThickness + 10,
       playableTop + (playableHeight / 2),
-      40,
+      10,
       playableHeight
     );
     this.leftSpikeCollider.setDepth(10);
@@ -79,6 +79,29 @@ export class Level15Scene extends BaseScene {
   }
 
   update() {
+    // Check if player is close to the fake platform (before stepping on it)
+    if (!this.fakePlatformDisappeared && this.fakePlatform) {
+      const fakePlatformLeftEdge = this.fakePlatform.x - (this.fakePlatform.width / 2);
+
+      // Disappear when player is just a few pixels before the platform edge
+      if (this.player.x >= fakePlatformLeftEdge - 10) {
+        this.fakePlatformDisappeared = true;
+
+        // Remove the fake platform from physics
+        this.platforms.remove(this.fakePlatform);
+
+        // Fade out and destroy the platform
+        this.tweens.add({
+          targets: this.fakePlatform,
+          alpha: 0,
+          duration: 200,
+          onComplete: () => {
+            this.fakePlatform.destroy();
+          }
+        });
+      }
+    }
+
     // Check if player falls below the floor level to kill them
     const floorY = window.innerHeight - 80;
     if (!this.levelComplete && this.player.y > floorY + 50) {
@@ -207,6 +230,19 @@ export class Level15Scene extends BaseScene {
       sectionWidth,
       floorHeight
     );
+
+    // Fake platform in the left gap - will disappear when player steps on it
+    const fakePlatformX = wallThickness + sectionWidth + gapWidth / 2;
+    this.fakePlatform = this.add.rectangle(
+      fakePlatformX,
+      floorY,
+      gapWidth,
+      floorHeight,
+      this.platformColor
+    );
+    this.physics.add.existing(this.fakePlatform, true);
+    this.platforms.add(this.fakePlatform);
+    this.fakePlatformDisappeared = false;
 
     // Section 2 (middle platform)
     this.middlePlatform = this.createPlatform(
