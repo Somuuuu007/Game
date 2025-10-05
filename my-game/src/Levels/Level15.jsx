@@ -25,15 +25,23 @@ export class Level15Scene extends BaseScene {
     // Move player spawn position a bit to the right
     this.player.x = 150;
 
-    // Create spikes on the left wall
-    const wallThickness = 85;
+    // Create spikes on the left wall (only in playable area)
+    const wallThickness = 88;
     const spikeSpacing = 15;
     const leftWallX = wallThickness;
-    const numSpikes = Math.floor(window.innerHeight / spikeSpacing);
+
+    // Calculate playable area (between ceiling and floor)
+    const topWallHeight = 80; // Same as groundPlatformHeight
+    const bottomWallHeight = 80;
+    const playableTop = topWallHeight;
+    const playableBottom = window.innerHeight - bottomWallHeight;
+    const playableHeight = playableBottom - playableTop;
+
+    const numSpikes = Math.floor(playableHeight / spikeSpacing);
 
     this.leftSpikes = [];
     for (let i = 0; i < numSpikes; i++) {
-      const spike = this.add.image(leftWallX, i * spikeSpacing + 10, "spike");
+      const spike = this.add.image(leftWallX, playableTop + (i * spikeSpacing), "spike");
       spike.setOrigin(0, 0.5);
       spike.setAngle(90); // Point right
       spike.setDepth(11);
@@ -43,9 +51,9 @@ export class Level15Scene extends BaseScene {
     // Create collision area for left wall spikes
     this.leftSpikeCollider = this.add.rectangle(
       wallThickness + 20,
-      window.innerHeight / 2,
+      playableTop + (playableHeight / 2),
       40,
-      window.innerHeight
+      playableHeight
     );
     this.leftSpikeCollider.setDepth(10);
     this.physics.add.existing(this.leftSpikeCollider, true);
