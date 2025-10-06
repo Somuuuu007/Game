@@ -74,14 +74,13 @@ export class Level16Scene extends BaseScene {
       }
     }
 
-    // Check if player jumps from platform 1 to trigger spikes on platform 2
+    // Check if player gets close to platform 2 to trigger spikes
     if (!this.spikeTrapTriggered && !this.levelComplete) {
-      const isOnPlatform1 = Math.abs(this.player.x - this.platform1X) < 65;
-      const isJumping = !this.player.body.touching.down;
-      const movingLeft = this.player.body.velocity.x < 0;
+      const isNearPlatform2 = Math.abs(this.player.x - this.platform2X) < 90;
+      const isNearPlatform2Y = this.player.y >= (window.innerHeight - 350) - 50 && this.player.y <= (window.innerHeight - 350) + 20;
 
-      // Trigger when player jumps from platform 1 moving left
-      if (isOnPlatform1 && isJumping && movingLeft) {
+      // Trigger when player is close to platform 2
+      if (isNearPlatform2 && isNearPlatform2Y) {
         this.spikeTrapTriggered = true;
 
         // Show spikes immediately
@@ -228,7 +227,7 @@ export class Level16Scene extends BaseScene {
       spike.setAlpha(0); // Invisible initially
       this.platform2Spikes.push(spike);
 
-      const collider = this.add.rectangle(spikeX, spikeY - 10, 15, 15);
+      const collider = this.add.rectangle(spikeX, spikeY - 10, 10, 7);
       collider.setDepth(10);
       this.physics.add.existing(collider, true);
       this.platform2SpikeColliders.push(collider);
