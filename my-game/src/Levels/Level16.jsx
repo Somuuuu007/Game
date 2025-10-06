@@ -111,11 +111,23 @@ export class Level16Scene extends BaseScene {
     );
 
     // Second platform (middle - slightly to the left of first)
+    const platform2X = window.innerWidth - platformWidth / 2 - horizontalGap;
+    const platform2Y = window.innerHeight - 350;
     this.rightPlatform2 = this.createPlatform(
-      window.innerWidth - platformWidth / 2 - horizontalGap,
-      window.innerHeight - 350,
+      platform2X,
+      platform2Y,
       platformWidth,
       platformHeight
+    );
+
+    // Support column for second platform (from top to platform)
+    const supportWidth = 20;
+    const supportHeight = platform2Y - platformHeight / 2;
+    this.support2 = this.createPlatform(
+      platform2X - platformWidth / 2 + supportWidth / 2,
+      supportHeight / 2,
+      supportWidth,
+      supportHeight
     );
 
     // Third platform (upper - back to the right edge)
@@ -127,11 +139,22 @@ export class Level16Scene extends BaseScene {
     );
 
     // Fourth platform (top - slightly to the left again)
+    const platform4X = window.innerWidth - platformWidth / 2 - horizontalGap;
+    const platform4Y = window.innerHeight - 550;
     this.rightPlatform4 = this.createPlatform(
-      window.innerWidth - platformWidth / 2 - horizontalGap,
-      window.innerHeight - 550,
+      platform4X,
+      platform4Y,
       platformWidth,
       platformHeight
+    );
+
+    // Support column for fourth platform (from top to platform)
+    const support4Height = platform4Y - platformHeight / 2;
+    this.support4 = this.createPlatform(
+      platform4X - platformWidth / 2 + supportWidth / 2,
+      support4Height / 2,
+      supportWidth,
+      support4Height
     );
   }
 
