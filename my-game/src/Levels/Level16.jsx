@@ -29,11 +29,12 @@ export class Level16Scene extends BaseScene {
   createPlatforms() {
     const wallThickness = 80;
 
-    // Create platforms in a right-left-right-left pattern
+    // Create platforms on the right side in a staircase pattern
     const platformWidth = 130;
     const platformHeight = 15;
+    const horizontalGap = 200; // Distance between platforms horizontally
 
-    // First platform (lower right)
+    // First platform (lower right - connected to edge)
     this.rightPlatform1 = this.createPlatform(
       window.innerWidth - platformWidth / 2,
       window.innerHeight - 250,
@@ -41,25 +42,25 @@ export class Level16Scene extends BaseScene {
       platformHeight
     );
 
-    // Second platform (middle left - between first and third)
-    this.leftPlatform1 = this.createPlatform(
-      platformWidth / 2,
+    // Second platform (middle - slightly to the left of first)
+    this.rightPlatform2 = this.createPlatform(
+      window.innerWidth - platformWidth / 2 - horizontalGap,
       window.innerHeight - 350,
       platformWidth,
       platformHeight
     );
 
-    // Third platform (upper right)
-    this.rightPlatform2 = this.createPlatform(
+    // Third platform (upper - back to the right edge)
+    this.rightPlatform3 = this.createPlatform(
       window.innerWidth - platformWidth / 2,
       window.innerHeight - 450,
       platformWidth,
       platformHeight
     );
 
-    // Fourth platform (top left - above third platform)
-    this.leftPlatform2 = this.createPlatform(
-      platformWidth / 2,
+    // Fourth platform (top - slightly to the left again)
+    this.rightPlatform4 = this.createPlatform(
+      window.innerWidth - platformWidth / 2 - horizontalGap,
       window.innerHeight - 550,
       platformWidth,
       platformHeight
