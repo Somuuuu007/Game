@@ -23,10 +23,31 @@ export class Level16Scene extends BaseScene {
 
   update() {
     super.update();
+    
   }
 
   createPlatforms() {
-    // Add Level 16 specific platforms here
+    const wallThickness = 80;
+
+    // Create two platforms on the right side of the screen (connected to the right edge)
+    const platformWidth = 130;
+    const platformHeight = 15;
+
+    // First platform (lower)
+    this.rightPlatform1 = this.createPlatform(
+      window.innerWidth - platformWidth / 2,
+      window.innerHeight - 250,
+      platformWidth,
+      platformHeight
+    );
+
+    // Second platform (higher, above the first one)
+    this.rightPlatform2 = this.createPlatform(
+      window.innerWidth - platformWidth / 2,
+      window.innerHeight - 450,
+      platformWidth,
+      platformHeight
+    );
   }
 
   onLevelComplete() {
