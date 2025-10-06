@@ -29,6 +29,9 @@ export class Level16Scene extends BaseScene {
     this.ballSpawned = false;
     this.ball = null;
 
+    // Track right spikes state
+    this.rightSpikesTriggered = false;
+
     // Move door to platform 4 position (stored in createPlatforms)
     this.door.x = this.platform4X;
     this.door.y = this.platform4Y - 7.5;
@@ -45,6 +48,30 @@ export class Level16Scene extends BaseScene {
     if (this.ball && this.ball.x > window.innerWidth + 100) {
       this.ball.destroy();
       this.ball = null;
+    }
+
+    // Show right spikes when player lands on platform 3
+    if (!this.rightSpikesTriggered && !this.levelComplete) {
+      const platform3X = window.innerWidth - 65;
+      const platform3Y = window.innerHeight - 450;
+
+      const isOnPlatform3 = Math.abs(this.player.x - platform3X) < 40;
+      const isNearPlatform3Y = this.player.y >= platform3Y - 50 && this.player.y <= platform3Y + 20;
+
+      // Trigger when player is closer to platform 3
+      if (isOnPlatform3 && isNearPlatform3Y) {
+        this.rightSpikesTriggered = true;
+
+        // Show spikes immediately
+        this.rightSpike1.setAlpha(1);
+        this.rightSpike2.setAlpha(1);
+        this.rightSpike3.setAlpha(1);
+
+        // Enable collision
+        this.physics.add.overlap(this.player, this.rightSpikeCollider1, this.handleSpikeCollision, null, this);
+        this.physics.add.overlap(this.player, this.rightSpikeCollider2, this.handleSpikeCollision, null, this);
+        this.physics.add.overlap(this.player, this.rightSpikeCollider3, this.handleSpikeCollision, null, this);
+      }
     }
 
     // Check if player jumps from platform 1 to trigger spikes on platform 2
@@ -212,9 +239,11 @@ export class Level16Scene extends BaseScene {
     this.platform2X = platform2X;
 
     // Third platform (upper - back to the right edge)
+    const platform3X = window.innerWidth - platformWidth / 2;
+    const platform3Y = window.innerHeight - 450;
     this.rightPlatform3 = this.createPlatform(
-      window.innerWidth - platformWidth / 2,
-      window.innerHeight - 450,
+      platform3X,
+      platform3Y,
       platformWidth,
       platformHeight
     );
@@ -241,6 +270,42 @@ export class Level16Scene extends BaseScene {
     // Store platform 4 position for door placement
     this.platform4X = platform4X;
     this.platform4Y = platform4Y;
+
+    // Create 3 spikes on the right side of platform 3 (touching right edge)
+    const rightSpikeSpacing = 15; // Reduced gap between spikes
+    const spikeX = window.innerWidth - 5; // Very close to right edge
+
+    const spike1Y = platform3Y - 20;
+    const spike2Y = platform3Y - 20 - rightSpikeSpacing;
+    const spike3Y = platform3Y - 20 - (2 * rightSpikeSpacing);
+
+    this.rightSpike1 = this.add.image(spikeX, spike1Y, "spike");
+    this.rightSpike1.setOrigin(0.5, 0.5);
+    this.rightSpike1.setAngle(-90); // Point left
+    this.rightSpike1.setDepth(11);
+    this.rightSpike1.setAlpha(0); // Invisible initially
+
+    this.rightSpike2 = this.add.image(spikeX, spike2Y, "spike");
+    this.rightSpike2.setOrigin(0.5, 0.5);
+    this.rightSpike2.setAngle(-90); // Point left
+    this.rightSpike2.setDepth(11);
+    this.rightSpike2.setAlpha(0); // Invisible initially
+
+    this.rightSpike3 = this.add.image(spikeX, spike3Y, "spike");
+    this.rightSpike3.setOrigin(0.5, 0.5);
+    this.rightSpike3.setAngle(-90); // Point left
+    this.rightSpike3.setDepth(11);
+    this.rightSpike3.setAlpha(0); // Invisible initially
+
+    // Store collider references for later use (smaller collision area)
+    this.rightSpikeCollider1 = this.add.rectangle(spikeX - 20, spike1Y, 10, 7);
+    this.physics.add.existing(this.rightSpikeCollider1, true);
+
+    this.rightSpikeCollider2 = this.add.rectangle(spikeX - 20, spike2Y, 10, 7);
+    this.physics.add.existing(this.rightSpikeCollider2, true);
+
+    this.rightSpikeCollider3 = this.add.rectangle(spikeX - 20, spike3Y, 10, 7);
+    this.physics.add.existing(this.rightSpikeCollider3, true);
   }
 
   spawnBall() {
