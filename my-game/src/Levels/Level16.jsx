@@ -29,11 +29,11 @@ export class Level16Scene extends BaseScene {
   createPlatforms() {
     const wallThickness = 80;
 
-    // Create two platforms on the right side of the screen (connected to the right edge)
+    // Create platforms in a right-left-right-left pattern
     const platformWidth = 130;
     const platformHeight = 15;
 
-    // First platform (lower)
+    // First platform (lower right)
     this.rightPlatform1 = this.createPlatform(
       window.innerWidth - platformWidth / 2,
       window.innerHeight - 250,
@@ -41,10 +41,26 @@ export class Level16Scene extends BaseScene {
       platformHeight
     );
 
-    // Second platform (higher, above the first one)
+    // Second platform (middle left - between first and third)
+    this.leftPlatform1 = this.createPlatform(
+      platformWidth / 2,
+      window.innerHeight - 350,
+      platformWidth,
+      platformHeight
+    );
+
+    // Third platform (upper right)
     this.rightPlatform2 = this.createPlatform(
       window.innerWidth - platformWidth / 2,
       window.innerHeight - 450,
+      platformWidth,
+      platformHeight
+    );
+
+    // Fourth platform (top left - above third platform)
+    this.leftPlatform2 = this.createPlatform(
+      platformWidth / 2,
+      window.innerHeight - 550,
       platformWidth,
       platformHeight
     );
