@@ -24,9 +24,25 @@ export class Level16Scene extends BaseScene {
 
     // Track spike trap state
     this.spikeTrapTriggered = false;
+
+    // Track ball state
+    this.ballSpawned = false;
+    this.ball = null;
   }
 
   update() {
+    // Spawn ball when player reaches 1/4 of screen
+    if (!this.ballSpawned && !this.levelComplete && this.player.x >= window.innerWidth / 4) {
+      this.ballSpawned = true;
+      this.spawnBall();
+    }
+
+    // Destroy ball if it goes off screen
+    if (this.ball && this.ball.x > window.innerWidth + 100) {
+      this.ball.destroy();
+      this.ball = null;
+    }
+
     // Check if player jumps from platform 1 to trigger spikes on platform 2
     if (!this.spikeTrapTriggered && !this.levelComplete) {
       const isOnPlatform1 = Math.abs(this.player.x - this.platform1X) < 65;
@@ -217,6 +233,39 @@ export class Level16Scene extends BaseScene {
       supportWidth,
       support4Height
     );
+  }
+
+  spawnBall() {
+    const groundY = window.innerHeight - 140; // Ground level
+    const ballRadius = 40; // Increased size
+
+    // Spawn ball from the left side
+    this.ball = this.add.circle(-100, groundY - ballRadius - 70, ballRadius, 0x212121);
+    this.physics.add.existing(this.ball);
+    this.ball.body.setBounce(0, 0); // No bouncing
+    this.ball.body.setCollideWorldBounds(false);
+    this.ball.body.setVelocityX(420); // Roll right
+    this.ball.body.setAllowGravity(true);
+
+    // Add collision with platforms
+    this.physics.add.collider(this.ball, this.platforms);
+
+    // Add collision with player
+    this.physics.add.overlap(this.player, this.ball, this.handleBallCollision, null, this);
+  }
+
+  handleBallCollision() {
+    if (!this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
+    }
   }
 
   handleSpikeCollision() {
