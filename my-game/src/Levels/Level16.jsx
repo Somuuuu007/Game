@@ -15,13 +15,46 @@ export class Level16Scene extends BaseScene {
   loadLevelAssets() {
     // Load Level 16 specific background
     this.load.image("background16", "/background 1/orig_big16.png");
+    // Load spike image
+    this.load.image("spike", "/Spike.png");
   }
 
   create() {
     super.create();
+
+    // Track spike trap state
+    this.spikeTrapTriggered = false;
   }
 
   update() {
+    // Check if player jumps from platform 1 to trigger spikes on platform 2
+    if (!this.spikeTrapTriggered && !this.levelComplete) {
+      const isOnPlatform1 = Math.abs(this.player.x - this.platform1X) < 65;
+      const isJumping = !this.player.body.touching.down;
+      const movingLeft = this.player.body.velocity.x < 0;
+
+      // Trigger when player jumps from platform 1 moving left
+      if (isOnPlatform1 && isJumping && movingLeft) {
+        this.spikeTrapTriggered = true;
+
+        // Show spikes immediately
+        this.platform2Spikes.forEach(spike => spike.setAlpha(1));
+
+        // Enable collision
+        this.platform2SpikeColliders.forEach(collider => {
+          this.physics.add.overlap(this.player, collider, this.handleSpikeCollision, null, this);
+        });
+
+        // Hide spikes and disable collision after 1 second
+        this.time.delayedCall(1000, () => {
+          this.platform2Spikes.forEach(spike => spike.setAlpha(0));
+          this.platform2SpikeColliders.forEach(collider => {
+            this.physics.world.disable(collider);
+          });
+        });
+      }
+    }
+
     // Override with increased jump power for this level
     if (!this.levelComplete) {
       const speed = 300;
@@ -130,6 +163,34 @@ export class Level16Scene extends BaseScene {
       supportHeight
     );
 
+    // Create invisible spikes on platform 2 (more towards the right side)
+    this.platform2Spikes = [];
+    this.platform2SpikeColliders = [];
+    const spikeSpacing = 20;
+    const numSpikes = Math.floor(platformWidth / spikeSpacing) - 1; // Remove last spike for symmetry
+    const startOffset = platformWidth / 4; // Start spikes from 1/4 of the platform (more to the right)
+
+    for (let i = 0; i < numSpikes; i++) {
+      const spikeX = platform2X - platformWidth / 2 + startOffset + (i * spikeSpacing);
+      const spikeY = platform2Y - platformHeight / 2;
+
+      const spike = this.add.image(spikeX, spikeY, "spike");
+      spike.setOrigin(0.5, 1);
+      spike.setAngle(0);
+      spike.setDepth(11);
+      spike.setAlpha(0); // Invisible initially
+      this.platform2Spikes.push(spike);
+
+      const collider = this.add.rectangle(spikeX, spikeY - 10, 15, 15);
+      collider.setDepth(10);
+      this.physics.add.existing(collider, true);
+      this.platform2SpikeColliders.push(collider);
+    }
+
+    // Store platform positions for detection
+    this.platform1X = window.innerWidth - platformWidth / 2;
+    this.platform2X = platform2X;
+
     // Third platform (upper - back to the right edge)
     this.rightPlatform3 = this.createPlatform(
       window.innerWidth - platformWidth / 2,
@@ -156,6 +217,20 @@ export class Level16Scene extends BaseScene {
       supportWidth,
       support4Height
     );
+  }
+
+  handleSpikeCollision() {
+    if (!this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
+    }
   }
 
   onLevelComplete() {
