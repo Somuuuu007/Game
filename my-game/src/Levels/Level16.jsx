@@ -9,7 +9,7 @@ export class Level16Scene extends BaseScene {
     this.groundPlatformHeight = 140; // Smaller height for this level
     this.platformColor = 0x212121; // Dark color for this level
     this.levelWidth = window.innerWidth; // Single screen width for this level
-    this.doorX = window.innerWidth - 150; // Door near the end
+    this.doorX = window.innerWidth - 200; // Temporary position, will be updated in create()
   }
 
   loadLevelAssets() {
@@ -28,6 +28,10 @@ export class Level16Scene extends BaseScene {
     // Track ball state
     this.ballSpawned = false;
     this.ball = null;
+
+    // Move door to platform 4 position (stored in createPlatforms)
+    this.door.x = this.platform4X;
+    this.door.y = this.platform4Y - 7.5;
   }
 
   update() {
@@ -233,6 +237,10 @@ export class Level16Scene extends BaseScene {
       supportWidth,
       support4Height
     );
+
+    // Store platform 4 position for door placement
+    this.platform4X = platform4X;
+    this.platform4Y = platform4Y;
   }
 
   spawnBall() {
