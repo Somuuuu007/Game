@@ -23,7 +23,7 @@ export class Level17Scene extends BaseScene {
     this.player.x = 250;
     this.player.y = window.innerHeight - 300;
 
-    // Move the default door (from BaseScene) to the left side and hide it
+    // Move the default door (from BaseScene) to the left side and hide it initially
     this.door.x = 150 / 2;
     this.door.y = window.innerHeight - 180;
     this.door.setAlpha(0); // Hidden initially
@@ -36,22 +36,62 @@ export class Level17Scene extends BaseScene {
     this.rightDoor.setOrigin(0.5, 1);
     this.rightDoor.setDepth(0);
     this.rightDoor.play("door_closed");
+
+    // Track rotation state
+    this.rotationStarted = false;
+    this.rotationComplete = false;
   }
 
   update() {
     super.update();
+
+    // Start rotating the left wall clockwise
+    if (!this.rotationStarted && !this.levelComplete) {
+      this.rotationStarted = true;
+
+      // Rotate clockwise (positive angle) - 90 degrees rotation
+      this.tweens.add({
+        targets: this.leftWall,
+        angle: 90,
+        duration: 6000, // 6 seconds for full rotation
+        ease: 'Linear',
+        onComplete: () => {
+          this.rotationComplete = true;
+          // Gradually reveal the door as wall rotates
+          this.door.setAlpha(1);
+        }
+      });
+
+      // Gradually reveal the door during rotation
+      this.tweens.add({
+        targets: this.door,
+        alpha: 1,
+        duration: 6000,
+        ease: 'Linear'
+      });
+    }
   }
 
   createPlatforms() {
     const boundaryWidth = 150;
 
-    // Left boundary wall
-    this.leftWall = this.createPlatform(
+    // Left boundary wall - will rotate clockwise
+    // Set rotation origin lower than middle for challenging gameplay
+    this.leftWall = this.add.rectangle(
       boundaryWidth / 2,
       window.innerHeight / 2,
       boundaryWidth,
-      window.innerHeight
+      window.innerHeight,
+      this.platformColor
     );
+    this.physics.add.existing(this.leftWall, true);
+    this.platforms.add(this.leftWall);
+
+    // Set origin to lower-right (right edge, 75% down from top)
+    this.leftWall.setOrigin(1, 0.65);
+    // Adjust position after changing origin
+    this.leftWall.x = boundaryWidth;
+    this.leftWall.y = window.innerHeight * 0.65;
 
     // Right boundary wall
     this.rightWall = this.createPlatform(
