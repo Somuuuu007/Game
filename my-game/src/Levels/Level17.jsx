@@ -6,19 +6,22 @@ export class Level17Scene extends BaseScene {
   constructor() {
     super("Level17");
     this.backgroundKey = "background17";
-    this.groundPlatformHeight = 80; // Smaller height for this level
-    this.platformColor = 0x000000; // Dark color for this level
-    this.levelWidth = window.innerWidth; // Single screen width for this level
+    this.groundPlatformHeight = 180; // Smaller height for this level
+    this.platformColor = 0x212121; // Dark color for this level
+    this.levelWidth = window.innerWidth ; // Single screen width for this level
     this.doorX = window.innerWidth - 150; // Door near the end
   }
 
   loadLevelAssets() {
     // Load Level 17 specific background
     this.load.image("background17", "/background 1/orig_big17.png");
+
   }
 
   create() {
     super.create();
+    this.player.x = 150;
+    this.player.y = window.innerHeight - 300;
   }
 
   update() {
@@ -26,7 +29,31 @@ export class Level17Scene extends BaseScene {
   }
 
   createPlatforms() {
-    // Add Level 17 specific platforms here
+    const boundaryWidth = 80;
+
+    // Left boundary wall
+    this.leftWall = this.createPlatform(
+      boundaryWidth / 2,
+      window.innerHeight / 2,
+      boundaryWidth,
+      window.innerHeight
+    );
+
+    // Right boundary wall
+    this.rightWall = this.createPlatform(
+      window.innerWidth - boundaryWidth / 2,
+      window.innerHeight / 2,
+      boundaryWidth,
+      window.innerHeight
+    );
+
+    // Top ceiling platform (same dimensions as ground)
+    this.topCeiling = this.createPlatform(
+      window.innerWidth / 2,
+      180 / 2,
+      window.innerWidth,
+      180
+    );
   }
 
   onLevelComplete() {
