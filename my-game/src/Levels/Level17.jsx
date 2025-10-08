@@ -63,18 +63,24 @@ export class Level17Scene extends BaseScene {
         ease: 'Linear',
         onComplete: () => {
           this.rotationComplete = true;
-          // Gradually reveal the door as wall rotates
-          this.door.setAlpha(1);
         }
       });
+    }
 
-      // Gradually reveal the door during rotation
-      this.tweens.add({
-        targets: this.door,
-        alpha: 1,
-        duration: 18000,
-        ease: 'Linear'
-      });
+    // Gradually reveal door as wall rotates away from it
+    if (this.rotationStarted && !this.rotationComplete) {
+      // Calculate if wall is still blocking the door based on rotation angle
+      // Door is at x = 75 (150/2), wall rotates from 0 to 180 degrees
+      // Door should start appearing around 45 degrees and be fully visible by 90 degrees
+      const rotationProgress = this.leftWall.angle;
+
+      if (rotationProgress >= 45) {
+        // Map rotation from 45-90 degrees to alpha 0-1
+        const doorAlpha = Phaser.Math.Clamp((rotationProgress - 45) / 45, 0, 1);
+        this.door.setAlpha(doorAlpha);
+      } else {
+        this.door.setAlpha(0);
+      }
     }
 
     // Check for collision with rotating wall during rotation
