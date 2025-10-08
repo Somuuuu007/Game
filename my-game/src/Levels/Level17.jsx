@@ -22,6 +22,20 @@ export class Level17Scene extends BaseScene {
     super.create();
     this.player.x = 250;
     this.player.y = window.innerHeight - 300;
+
+    // Move the default door (from BaseScene) to the left side and hide it
+    this.door.x = 150 / 2;
+    this.door.y = window.innerHeight - 180;
+    this.door.setAlpha(0); // Hidden initially
+
+    // Create a visible but non-functional door on the right side
+    const rightDoorX = window.innerWidth - 250;
+    const rightDoorY = window.innerHeight - 180;
+    this.rightDoor = this.add.sprite(rightDoorX, rightDoorY, "door_17");
+    this.rightDoor.setScale(0.3);
+    this.rightDoor.setOrigin(0.5, 1);
+    this.rightDoor.setDepth(0);
+    this.rightDoor.play("door_closed");
   }
 
   update() {
