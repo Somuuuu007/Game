@@ -45,15 +45,15 @@ export class Level17Scene extends BaseScene {
   update() {
     super.update();
 
-    // Start rotating the left wall clockwise
-    if (!this.rotationStarted && !this.levelComplete) {
+    // Start rotating the left wall clockwise when player reaches half of screen
+    if (!this.rotationStarted && !this.levelComplete && this.player.x >= window.innerWidth / 2) {
       this.rotationStarted = true;
 
-      // Rotate clockwise (positive angle) - 90 degrees rotation
+      // Rotate clockwise (positive angle) - 180 degrees rotation
       this.tweens.add({
         targets: this.leftWall,
-        angle: 90,
-        duration: 6000, // 6 seconds for full rotation
+        angle: 180,
+        duration: 5000, // 12 seconds for full rotation
         ease: 'Linear',
         onComplete: () => {
           this.rotationComplete = true;
@@ -66,7 +66,7 @@ export class Level17Scene extends BaseScene {
       this.tweens.add({
         targets: this.door,
         alpha: 1,
-        duration: 6000,
+        duration: 18000,
         ease: 'Linear'
       });
     }
@@ -75,19 +75,23 @@ export class Level17Scene extends BaseScene {
   createPlatforms() {
     const boundaryWidth = 150;
 
+    // Calculate diagonal length to cover entire screen when rotated
+    // Multiply by 1.5 to ensure full coverage during rotation
+    const diagonalLength = Math.sqrt(Math.pow(window.innerWidth, 2) + Math.pow(window.innerHeight, 2)) * 1.5;
+
     // Left boundary wall - will rotate clockwise
     // Set rotation origin lower than middle for challenging gameplay
     this.leftWall = this.add.rectangle(
       boundaryWidth / 2,
       window.innerHeight / 2,
       boundaryWidth,
-      window.innerHeight,
+      diagonalLength, // Use extended diagonal length
       this.platformColor
     );
     this.physics.add.existing(this.leftWall, true);
     this.platforms.add(this.leftWall);
 
-    // Set origin to lower-right (right edge, 75% down from top)
+    // Set origin to lower-right (right edge, 65% down from top)
     this.leftWall.setOrigin(1, 0.65);
     // Adjust position after changing origin
     this.leftWall.x = boundaryWidth;
