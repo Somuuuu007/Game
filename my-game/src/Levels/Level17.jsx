@@ -40,6 +40,7 @@ export class Level17Scene extends BaseScene {
     // Track rotation state
     this.rotationStarted = false;
     this.rotationComplete = false;
+    this.hasCollidedWithWall = false; // Track if player has already collided
   }
 
   update() {
@@ -49,11 +50,16 @@ export class Level17Scene extends BaseScene {
     if (!this.rotationStarted && !this.levelComplete && this.player.x >= window.innerWidth / 2) {
       this.rotationStarted = true;
 
+      // Remove wall from platforms so it doesn't block player during rotation
+      // But the polygon collision will still kill player if they touch it
+      this.platforms.remove(this.leftWall);
+      this.physics.world.disable(this.leftWall);
+
       // Rotate clockwise (positive angle) - 180 degrees rotation
       this.tweens.add({
         targets: this.leftWall,
         angle: 180,
-        duration: 5000, // 12 seconds for full rotation
+        duration: 4000, // 4 seconds for full rotation
         ease: 'Linear',
         onComplete: () => {
           this.rotationComplete = true;
@@ -68,6 +74,59 @@ export class Level17Scene extends BaseScene {
         alpha: 1,
         duration: 18000,
         ease: 'Linear'
+      });
+    }
+
+    // Check for collision with rotating wall during rotation
+    if (this.rotationStarted && !this.rotationComplete && !this.levelComplete && !this.hasCollidedWithWall) {
+      // Get the wall's four corners after rotation
+      const wallWidth = 150;
+      const wallHeight = Math.sqrt(Math.pow(window.innerWidth, 2) + Math.pow(window.innerHeight, 2)) * 1.5;
+      const wallAngle = Phaser.Math.DegToRad(this.leftWall.angle);
+
+      // Wall origin is at (1, 0.65) - bottom right corner is at origin
+      const originX = this.leftWall.x;
+      const originY = this.leftWall.y;
+
+      // Calculate the four corners of the rotated wall
+      // Corner positions relative to origin (which is at right edge, 65% down)
+      const corners = [
+        { x: 0, y: -wallHeight * 0.65 }, // top-right
+        { x: -wallWidth, y: -wallHeight * 0.65 }, // top-left
+        { x: -wallWidth, y: wallHeight * 0.35 }, // bottom-left
+        { x: 0, y: wallHeight * 0.35 } // bottom-right
+      ];
+
+      // Rotate corners around origin and convert to world coordinates
+      const rotatedCorners = corners.map(corner => {
+        const rotatedX = corner.x * Math.cos(wallAngle) - corner.y * Math.sin(wallAngle);
+        const rotatedY = corner.x * Math.sin(wallAngle) + corner.y * Math.cos(wallAngle);
+        return new Phaser.Geom.Point(originX + rotatedX, originY + rotatedY);
+      });
+
+      // Create polygon from rotated corners
+      const wallPolygon = new Phaser.Geom.Polygon(rotatedCorners);
+
+      // Check if player center point is inside the wall polygon
+      const playerPoint = new Phaser.Geom.Point(this.player.x, this.player.y);
+
+      if (wallPolygon.contains(playerPoint.x, playerPoint.y)) {
+        this.hasCollidedWithWall = true;
+        this.handleWallCollision();
+      }
+    }
+  }
+
+  handleWallCollision() {
+    if (!this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
       });
     }
   }
@@ -88,14 +147,15 @@ export class Level17Scene extends BaseScene {
       diagonalLength, // Use extended diagonal length
       this.platformColor
     );
-    this.physics.add.existing(this.leftWall, true);
-    this.platforms.add(this.leftWall);
 
-    // Set origin to lower-right (right edge, 65% down from top)
+    // Set origin FIRST before adding physics
     this.leftWall.setOrigin(1, 0.65);
-    // Adjust position after changing origin
     this.leftWall.x = boundaryWidth;
     this.leftWall.y = window.innerHeight * 0.65;
+
+    // Add physics and make it static initially
+    this.physics.add.existing(this.leftWall, true); // Static body
+    this.platforms.add(this.leftWall);
 
     // Right boundary wall
     this.rightWall = this.createPlatform(
