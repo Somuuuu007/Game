@@ -9,7 +9,7 @@ export class Level17Scene extends BaseScene {
     this.groundPlatformHeight = 180; // Smaller height for this level
     this.platformColor = 0x212121; // Dark color for this level
     this.levelWidth = window.innerWidth ; // Single screen width for this level
-    this.doorX = window.innerWidth - 150; // Door near the end
+    this.doorX = window.innerWidth - 250; // Door near the end
   }
 
   loadLevelAssets() {
@@ -20,7 +20,7 @@ export class Level17Scene extends BaseScene {
 
   create() {
     super.create();
-    this.player.x = 150;
+    this.player.x = 250;
     this.player.y = window.innerHeight - 300;
   }
 
@@ -29,7 +29,7 @@ export class Level17Scene extends BaseScene {
   }
 
   createPlatforms() {
-    const boundaryWidth = 80;
+    const boundaryWidth = 150;
 
     // Left boundary wall
     this.leftWall = this.createPlatform(
