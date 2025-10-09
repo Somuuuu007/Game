@@ -27,10 +27,101 @@ export class Level18Scene extends BaseScene {
     const rightPlatformHeight = 400;
     this.door.x = window.innerWidth - 100;
     this.door.y = window.innerHeight - rightPlatformHeight;
+
+    // Track jump delay
+    this.jumpRequested = false;
+    this.jumpTimer = null;
   }
 
   update() {
-    super.update();
+    // Override the update to add jump delay
+    if (this.levelComplete) {
+      return;
+    }
+
+    const speed = 300;
+    const jumpPower = -400;
+
+    this.isOnGround = this.player.body.touching.down || this.player.body.blocked.down;
+
+    // Horizontal movement - arrow keys or WASD
+    if (this.cursors.left.isDown || this.aKey.isDown) {
+      this.player.setVelocityX(-speed);
+      this.player.setFlipX(true);
+
+      if (this.isOnGround && this.player.anims.currentAnim.key !== "run") {
+        this.player.play("run");
+      }
+    } else if (this.cursors.right.isDown || this.dKey.isDown) {
+      this.player.setVelocityX(speed);
+      this.player.setFlipX(false);
+
+      if (this.isOnGround && this.player.anims.currentAnim.key !== "run") {
+        this.player.play("run");
+      }
+    } else {
+      this.player.setVelocityX(0);
+
+      if (this.isOnGround && this.player.anims.currentAnim.key !== "idle") {
+        this.player.play("idle");
+      }
+    }
+
+    // Jump with 1 second delay
+    if ((Phaser.Input.Keyboard.JustDown(this.spaceKey) || Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.wKey)) && this.isOnGround && !this.jumpRequested) {
+      // Request jump with delay
+      this.jumpRequested = true;
+
+      // Clear any existing timer
+      if (this.jumpTimer) {
+        this.jumpTimer.remove();
+      }
+
+      // Set timer for 1 second delay
+      this.jumpTimer = this.time.delayedCall(1000, () => {
+        // Execute jump after 1 second if still on ground
+        if (this.isOnGround && !this.levelComplete) {
+          this.player.setVelocityY(jumpPower);
+          this.player.play("jump");
+        }
+        this.jumpRequested = false;
+        this.jumpTimer = null;
+      });
+    }
+
+    if (!this.isOnGround && this.player.anims.currentAnim.key !== "jump") {
+      this.player.play("jump");
+    }
+
+    // Door logic
+    const distanceToDoor = Phaser.Math.Distance.Between(
+      this.player.x, this.player.y,
+      this.door.x, this.door.y
+    );
+
+    if (distanceToDoor < 200 && !this.doorOpen) {
+      this.doorOpen = true;
+      this.door.play("door_opening");
+      this.door.once("animationcomplete", () => {
+        this.door.play("door_open");
+      });
+    }
+
+    if (Math.abs(this.player.x - this.door.x) < 10 && distanceToDoor < 40 && this.doorOpen && !this.levelComplete) {
+      this.levelComplete = true;
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+      this.player.setFlipX(false);
+      this.player.stop();
+      this.player.play("walkup", true);
+
+      this.player.once("animationcomplete", () => {
+        this.cameras.main.fadeOut(500, 0, 0, 0);
+        this.cameras.main.once("camerafadeoutcomplete", () => {
+          this.onLevelComplete();
+        });
+      });
+    }
   }
 
   createPlatforms() {
@@ -90,6 +181,16 @@ export class Level18Scene extends BaseScene {
       window.innerHeight - rightPlatformHeight + rightFrontPlatformHeight / 2,
       rightFrontPlatformWidth,
       rightFrontPlatformHeight
+    );
+
+    // Small platform between right platform and center square
+    const rightMiddlePlatformWidth = 100;
+    const rightMiddlePlatformHeight = 15;
+    this.rightMiddlePlatform = this.createPlatform(
+      (window.innerWidth - rightPlatformWidth * 2 + window.innerWidth / 2) / 2, // Halfway between right platform and square
+      window.innerHeight - 350,
+      rightMiddlePlatformWidth,
+      rightMiddlePlatformHeight
     );
   }
 
