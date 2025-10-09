@@ -57,11 +57,29 @@ export class Level19Scene extends BaseScene {
     );
 
     // Right top platform - 420px above the bottom platform
+    const rightTopPlatformWidth = platformWidth + 700;
+    const rightTopPlatformHeight = platformHeight + 100;
+    const rightTopPlatformX = window.innerWidth - platformWidth / 2;
+    const rightTopPlatformY = window.innerHeight - platformHeight / 2 - 420;
+
     this.createPlatform(
-      window.innerWidth - platformWidth / 2 ,
-      window.innerHeight - platformHeight / 2 - 420,
-      platformWidth + 700,
-      platformHeight + 100
+      rightTopPlatformX,
+      rightTopPlatformY,
+      rightTopPlatformWidth,
+      rightTopPlatformHeight
+    );
+
+    // Platform attached to the right top platform at its left boundary (centered)
+    const rightAttachedPlatformWidth = 250;
+    const rightAttachedPlatformHeight = 100;
+    const rightAttachedPlatformX = rightTopPlatformX - rightTopPlatformWidth / 2 - rightAttachedPlatformWidth / 2;
+    const rightAttachedPlatformY = rightTopPlatformY; // Centered at same Y position
+
+    this.createPlatform(
+      rightAttachedPlatformX,
+      rightAttachedPlatformY,
+      rightAttachedPlatformWidth,
+      rightAttachedPlatformHeight
     );
 
     // Platform to the left of right bottom platform
