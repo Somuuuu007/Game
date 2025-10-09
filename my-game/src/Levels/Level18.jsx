@@ -7,10 +7,10 @@ export class Level18Scene extends BaseScene {
     super("Level18");
     this.backgroundKey = "background18";
     this.groundPlatformHeight = 200; // Smaller height for this level
-    this.groundPlatformWidth = 200; // Smaller height for this level
+    this.groundPlatformWidth = 200; // Smaller width for this level
     this.platformColor = 0x212121; // Dark color for this level
     this.levelWidth = window.innerWidth; // Single screen width for this level
-    this.doorX = window.innerWidth - 150; // Door near the end
+    this.doorX = window.innerWidth - 100; // Door near the end on right platform
   }
 
   loadLevelAssets() {
@@ -22,6 +22,11 @@ export class Level18Scene extends BaseScene {
     super.create();
     this.player.x = 100;
     this.player.y = window.innerHeight - 300;
+
+    // Move door to right platform (on top of the taller platform)
+    const rightPlatformHeight = 400;
+    this.door.x = window.innerWidth - 100;
+    this.door.y = window.innerHeight - rightPlatformHeight;
   }
 
   update() {
@@ -55,6 +60,16 @@ export class Level18Scene extends BaseScene {
     );
     this.physics.add.existing(this.centerSquare, true); // Static body
     this.platforms.add(this.centerSquare);
+
+    // Right platform - taller than left platform, door will be on this
+    const rightPlatformWidth = 200;
+    const rightPlatformHeight = 400; // Much taller than ground platform
+    this.rightPlatform = this.createPlatform(
+      window.innerWidth - rightPlatformWidth / 2,
+      window.innerHeight - rightPlatformHeight / 2,
+      rightPlatformWidth,
+      rightPlatformHeight
+    );
   }
 
   onLevelComplete() {
