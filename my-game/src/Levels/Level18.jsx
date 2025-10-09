@@ -163,9 +163,17 @@ export class Level18Scene extends BaseScene {
         this.physics.add.collider(this.fallingBall, this.platforms, () => {
           this.ballBounceCount++;
 
-          // After 2 bounces, remove bounce and let it settle
+          // After 2 bounces, remove bounce
           if (this.ballBounceCount >= 2) {
             this.fallingBall.body.setBounce(0);
+
+            // Wait for ball to settle, then make it roll forward
+            this.time.delayedCall(500, () => {
+              if (this.fallingBall) {
+                this.fallingBall.body.setVelocityX(200);
+                this.fallingBall.body.setCollideWorldBounds(false); // Allow to fall off screen
+              }
+            });
           }
         });
       }
