@@ -67,7 +67,7 @@ export class Level18Scene extends BaseScene {
       }
     }
 
-    // Jump with 1 second delay
+    // Jump with 0.7 second delay
     if ((Phaser.Input.Keyboard.JustDown(this.spaceKey) || Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.wKey)) && this.isOnGround && !this.jumpRequested) {
       // Request jump with delay
       this.jumpRequested = true;
@@ -77,9 +77,9 @@ export class Level18Scene extends BaseScene {
         this.jumpTimer.remove();
       }
 
-      // Set timer for 1 second delay
-      this.jumpTimer = this.time.delayedCall(1000, () => {
-        // Execute jump after 1 second if still on ground
+      // Set timer for 0.7 second delay
+      this.jumpTimer = this.time.delayedCall(700, () => {
+        // Execute jump after 0.7 second if still on ground
         if (this.isOnGround && !this.levelComplete) {
           this.player.setVelocityY(jumpPower);
           this.player.play("jump");
