@@ -34,11 +34,20 @@ export class Level19Scene extends BaseScene {
     const platformWidth = 300;
     const platformHeight = 150;
 
+    // Bottom platform
     this.createPlatform(
       window.innerWidth - platformWidth / 2,
       window.innerHeight - platformHeight / 2,
       platformWidth,
       platformHeight
+    );
+
+    // Top platform - 200px above the bottom platform
+    this.createPlatform(
+      window.innerWidth - platformWidth / 2 ,
+      window.innerHeight - platformHeight / 2 - 420,
+      platformWidth + 700,
+      platformHeight + 100
     );
   }
 
