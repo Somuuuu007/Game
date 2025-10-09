@@ -22,14 +22,21 @@ export class Level19Scene extends BaseScene {
   create() {
     super.create();
 
-    // Spawn player on the right side platform
+    // Spawn player on the right bottom platform (safely away from spikes)
     this.player.x = window.innerWidth - 150;
-    this.player.y = window.innerHeight - 250;
+    this.player.y = window.innerHeight - 200;
 
     // Move door to the top platform
     const topPlatformY = window.innerHeight - 150 / 2 - 420;
     this.door.x = window.innerWidth - 250;
     this.door.y = topPlatformY - 250 / 2;
+
+    // Add collision detection for all spike colliders after player is created
+    if (this.middlePlatformSpikeColliders) {
+      this.middlePlatformSpikeColliders.forEach(collider => {
+        this.physics.add.overlap(this.player, collider, this.handleSpikeCollision, null, this);
+      });
+    }
   }
 
   update() {
@@ -77,10 +84,10 @@ export class Level19Scene extends BaseScene {
     const spikeSpacing = 20;
     const cornerOffset = 20; // Offset to avoid corner overlaps
 
-    // Top spikes (excluding corners)
-    const topSpikeCount = Math.floor((middlePlatformWidth - 2 * cornerOffset) / spikeSpacing);
+    // Top spikes (excluding corners) - add 1 more spike
+    const topSpikeCount = Math.floor((middlePlatformWidth - 2 * cornerOffset) / spikeSpacing) + 1;
     for (let i = 0; i < topSpikeCount; i++) {
-      const spikeX = middlePlatformX - middlePlatformWidth / 2 + cornerOffset + (i * spikeSpacing) + spikeSpacing / 2;
+      const spikeX = middlePlatformX - middlePlatformWidth / 2 + cornerOffset + (i * spikeSpacing) + spikeSpacing / 2 - 7; // Shifted 10px left
       const spikeY = middlePlatformY - middlePlatformHeight / 2;
 
       const spike = this.add.image(spikeX, spikeY, "spike");
@@ -95,10 +102,10 @@ export class Level19Scene extends BaseScene {
       this.middlePlatformSpikeColliders.push(collider);
     }
 
-    // Bottom spikes (excluding corners)
-    const bottomSpikeCount = Math.floor((middlePlatformWidth - 2 * cornerOffset) / spikeSpacing);
+    // Bottom spikes (excluding corners) - add 1 more spike
+    const bottomSpikeCount = Math.floor((middlePlatformWidth - 2 * cornerOffset) / spikeSpacing) + 1;
     for (let i = 0; i < bottomSpikeCount; i++) {
-      const spikeX = middlePlatformX - middlePlatformWidth / 2 + cornerOffset + (i * spikeSpacing) + spikeSpacing / 2;
+      const spikeX = middlePlatformX - middlePlatformWidth / 2 + cornerOffset + (i * spikeSpacing) + spikeSpacing / 2 - 7; // Shifted 10px left
       const spikeY = middlePlatformY + middlePlatformHeight / 2;
 
       const spike = this.add.image(spikeX, spikeY, "spike");
@@ -148,11 +155,6 @@ export class Level19Scene extends BaseScene {
       this.physics.add.existing(collider, true);
       this.middlePlatformSpikeColliders.push(collider);
     }
-
-    // Add collision detection for all spike colliders
-    this.middlePlatformSpikeColliders.forEach(collider => {
-      this.physics.add.overlap(this.player, collider, this.handleSpikeCollision, null, this);
-    });
 
     // Left top platform (same as right top)
     this.createPlatform(
