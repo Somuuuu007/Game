@@ -31,6 +31,10 @@ export class Level18Scene extends BaseScene {
     // Track jump delay
     this.jumpRequested = false;
     this.jumpTimer = null;
+
+    // Track falling ball state
+    this.ballTriggered = false;
+    this.fallingBall = null;
   }
 
   update() {
@@ -137,6 +141,55 @@ export class Level18Scene extends BaseScene {
         });
       });
     }
+
+    // Check if player is on middle platform and trigger falling ball
+    if (!this.ballTriggered && this.player.body.touching.down) {
+      const playerBounds = this.player.getBounds();
+      const middlePlatformBounds = this.middlePlatform.getBounds();
+
+      if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, middlePlatformBounds)) {
+        this.ballTriggered = true;
+
+        // Create falling ball above middle platform
+        this.fallingBall = this.add.circle(this.middlePlatformX, 0, 25, 0x212121); // Dark circle, radius 25
+        this.physics.add.existing(this.fallingBall);
+        this.fallingBall.body.setVelocityY(400); // Fall speed
+        this.fallingBall.body.setBounce(0.7); // Bounce when hitting surfaces
+        this.fallingBall.body.setCollideWorldBounds(true); // Don't go off screen
+        this.fallingBall.setDepth(15);
+
+        // Make it collide with platforms
+        this.physics.add.collider(this.fallingBall, this.platforms);
+      }
+    }
+
+    // Update falling ball and check collision
+    if (this.fallingBall && !this.levelComplete) {
+      // Check if falling ball hits the player
+      const distanceToPlayer = Phaser.Math.Distance.Between(
+        this.fallingBall.x, this.fallingBall.y,
+        this.player.x, this.player.y
+      );
+
+      // Kill player if they're within 40 pixels radius
+      if (distanceToPlayer < 40) {
+        this.handleBallCollision();
+      }
+    }
+  }
+
+  handleBallCollision() {
+    if (!this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
+    }
   }
 
   createPlatforms() {
@@ -155,6 +208,9 @@ export class Level18Scene extends BaseScene {
       platformHeight
     );
 
+    // Store front platform position for ball trigger
+    this.frontPlatformX = platformWidth + platformWidth / 2;
+
     // Create a square obstacle at the center of the level (will move up/down later)
     const squareSize = 150;
     this.centerSquare = this.add.rectangle(
@@ -170,12 +226,18 @@ export class Level18Scene extends BaseScene {
     // Small platform between left platform and center square
     const middlePlatformWidth = 100;
     const middlePlatformHeight = 15;
+    const middlePlatformX = (platformWidth * 2 + window.innerWidth / 2) / 2;
+    const middlePlatformY = window.innerHeight - 250;
     this.middlePlatform = this.createPlatform(
-      (platformWidth * 2 + window.innerWidth / 2) / 2, // Halfway between left platform and square
-      window.innerHeight -250,
+      middlePlatformX,
+      middlePlatformY,
       middlePlatformWidth,
       middlePlatformHeight
     );
+
+    // Store middle platform position for ball target
+    this.middlePlatformX = middlePlatformX;
+    this.middlePlatformY = middlePlatformY;
 
     // Right platform - taller than left platform, door will be on this
     const rightPlatformWidth = 200;
