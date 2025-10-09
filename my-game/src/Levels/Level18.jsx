@@ -61,6 +61,16 @@ export class Level18Scene extends BaseScene {
     this.physics.add.existing(this.centerSquare, true); // Static body
     this.platforms.add(this.centerSquare);
 
+    // Small platform between left platform and center square
+    const middlePlatformWidth = 100;
+    const middlePlatformHeight = 15;
+    this.middlePlatform = this.createPlatform(
+      (platformWidth * 2 + window.innerWidth / 2) / 2, // Halfway between left platform and square
+      window.innerHeight -250,
+      middlePlatformWidth,
+      middlePlatformHeight
+    );
+
     // Right platform - taller than left platform, door will be on this
     const rightPlatformWidth = 200;
     const rightPlatformHeight = 400; // Much taller than ground platform
