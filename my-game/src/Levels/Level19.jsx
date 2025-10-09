@@ -23,6 +23,11 @@ export class Level19Scene extends BaseScene {
     // Spawn player on the right side platform
     this.player.x = window.innerWidth - 150;
     this.player.y = window.innerHeight - 250;
+
+    // Move door to the top platform
+    const topPlatformY = window.innerHeight - 150 / 2 - 420;
+    this.door.x = window.innerWidth - 250;
+    this.door.y = topPlatformY - 250 / 2;
   }
 
   update() {
@@ -34,7 +39,7 @@ export class Level19Scene extends BaseScene {
     const platformWidth = 300;
     const platformHeight = 150;
 
-    // Bottom platform
+    // Right bottom platform
     this.createPlatform(
       window.innerWidth - platformWidth / 2,
       window.innerHeight - platformHeight / 2,
@@ -42,9 +47,17 @@ export class Level19Scene extends BaseScene {
       platformHeight
     );
 
-    // Top platform - 200px above the bottom platform
+    // Right top platform - 420px above the bottom platform
     this.createPlatform(
       window.innerWidth - platformWidth / 2 ,
+      window.innerHeight - platformHeight / 2 - 420,
+      platformWidth + 700,
+      platformHeight + 100
+    );
+
+    // Left top platform (same as right top)
+    this.createPlatform(
+      platformWidth / 2,
       window.innerHeight - platformHeight / 2 - 420,
       platformWidth + 700,
       platformHeight + 100
