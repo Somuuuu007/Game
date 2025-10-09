@@ -70,6 +70,17 @@ export class Level18Scene extends BaseScene {
       rightPlatformWidth,
       rightPlatformHeight
     );
+
+    // Second platform on right side (similar to left side) - top surfaces aligned
+    const rightFrontPlatformWidth = 200;
+    const rightFrontPlatformHeight = 20;
+
+    this.rightFrontPlatform = this.createPlatform(
+      window.innerWidth - rightPlatformWidth - rightFrontPlatformWidth / 2,
+      window.innerHeight - rightPlatformHeight + rightFrontPlatformHeight / 2,
+      rightFrontPlatformWidth,
+      rightFrontPlatformHeight
+    );
   }
 
   onLevelComplete() {
