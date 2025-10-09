@@ -33,8 +33,8 @@ export class Level19Scene extends BaseScene {
     super.create();
 
     // Spawn player on the right bottom platform (safely away from spikes)
-    this.player.x = window.innerWidth - 150;
-    this.player.y = window.innerHeight - 200;
+    this.player.x = window.innerWidth - 130;
+    this.player.y = window.innerHeight - 180;
 
     // Add S key for downward movement
     this.sKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
