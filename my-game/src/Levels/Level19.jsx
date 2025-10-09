@@ -6,10 +6,11 @@ export class Level19Scene extends BaseScene {
   constructor() {
     super("Level19");
     this.backgroundKey = "background19";
-    this.groundPlatformHeight = 80; // Smaller height for this level
+    this.groundPlatformHeight = 150; // Smaller height for this level
+    this.groundPlatformWidth = 300; // Smaller width for this level
     this.platformColor = 0x212121; // Dark color for this level
     this.levelWidth = window.innerWidth; // Single screen width for this level
-    this.doorX = window.innerWidth - 150; // Door near the end
+    this.doorX = window.innerWidth - 250; // Door near the end
   }
 
   loadLevelAssets() {
@@ -19,6 +20,10 @@ export class Level19Scene extends BaseScene {
 
   create() {
     super.create();
+
+    // Spawn player on the right side platform
+    this.player.x = window.innerWidth - 150;
+    this.player.y = window.innerHeight - 250;
   }
 
   update() {
@@ -26,7 +31,13 @@ export class Level19Scene extends BaseScene {
   }
 
   createPlatforms() {
-    // Add Level 19 specific platforms here
+    // Right side platform where player spawns
+    this.createPlatform(
+      window.innerWidth - this.groundPlatformWidth / 2,
+      window.innerHeight - this.groundPlatformHeight / 2,
+      this.groundPlatformWidth,
+      this.groundPlatformHeight
+    );
   }
 
   onLevelComplete() {
