@@ -36,6 +36,9 @@ export class Level18Scene extends BaseScene {
     this.ballTriggered = false;
     this.fallingBall = null;
     this.ballBounceCount = 0;
+
+    // Track right front platform animation
+    this.rightFrontPlatformTriggered = false;
   }
 
   update() {
@@ -87,26 +90,32 @@ export class Level18Scene extends BaseScene {
       }
     }
 
-    // Jump with 0.7 second delay
+    // Jump with 0.7 second delay (unless right front platform is triggered)
     if ((Phaser.Input.Keyboard.JustDown(this.spaceKey) || Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.wKey)) && this.isOnGround && !this.jumpRequested) {
-      // Request jump with delay
-      this.jumpRequested = true;
+      // If right front platform has been triggered, jump immediately
+      if (this.rightFrontPlatformTriggered) {
+        this.player.setVelocityY(jumpPower);
+        this.player.play("jump");
+      } else {
+        // Request jump with delay
+        this.jumpRequested = true;
 
-      // Clear any existing timer
-      if (this.jumpTimer) {
-        this.jumpTimer.remove();
-      }
-
-      // Set timer for 0.7 second delay
-      this.jumpTimer = this.time.delayedCall(700, () => {
-        // Execute jump after 0.7 second if still on ground
-        if (this.isOnGround && !this.levelComplete) {
-          this.player.setVelocityY(jumpPower);
-          this.player.play("jump");
+        // Clear any existing timer
+        if (this.jumpTimer) {
+          this.jumpTimer.remove();
         }
-        this.jumpRequested = false;
-        this.jumpTimer = null;
-      });
+
+        // Set timer for 0.7 second delay
+        this.jumpTimer = this.time.delayedCall(700, () => {
+          // Execute jump after 0.7 second if still on ground
+          if (this.isOnGround && !this.levelComplete) {
+            this.player.setVelocityY(jumpPower);
+            this.player.play("jump");
+          }
+          this.jumpRequested = false;
+          this.jumpTimer = null;
+        });
+      }
     }
 
     if (!this.isOnGround && this.player.anims.currentAnim.key !== "jump") {
@@ -190,6 +199,38 @@ export class Level18Scene extends BaseScene {
       // Kill player if they're within 40 pixels radius
       if (distanceToPlayer < 40) {
         this.handleBallCollision();
+      }
+    }
+
+    // Check if player lands on right middle platform and trigger right front platform animation
+    if (!this.rightFrontPlatformTriggered && this.player.body.touching.down) {
+      const playerBounds = this.player.getBounds();
+      const rightMiddlePlatformBounds = this.rightMiddlePlatform.getBounds();
+
+      if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, rightMiddlePlatformBounds)) {
+        this.rightFrontPlatformTriggered = true;
+
+        // Remove jump delay immediately
+        this.jumpRequested = false;
+        if (this.jumpTimer) {
+          this.jumpTimer.remove();
+          this.jumpTimer = null;
+        }
+
+        // Animate platform moving forward (to the right) very slowly
+        // Keep physics enabled and update body position continuously
+        this.tweens.add({
+          targets: this.rightFrontPlatform,
+          x: this.rightFrontPlatform.x + 300, // Move 300 pixels to the right
+          duration: 10000, // Very slow - 10 seconds
+          ease: 'Linear',
+          onUpdate: () => {
+            // Update physics body position to match visual position
+            if (this.rightFrontPlatform.body) {
+              this.rightFrontPlatform.body.updateFromGameObject();
+            }
+          }
+        });
       }
     }
   }
