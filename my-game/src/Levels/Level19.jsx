@@ -26,6 +26,9 @@ export class Level19Scene extends BaseScene {
     this.player.x = window.innerWidth - 150;
     this.player.y = window.innerHeight - 200;
 
+    // Add S key for downward movement
+    this.sKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+
     // Move door to the top platform
     const topPlatformY = window.innerHeight - 150 / 2 - 420;
     this.door.x = window.innerWidth - 250;
@@ -40,7 +43,84 @@ export class Level19Scene extends BaseScene {
   }
 
   update() {
-    super.update();
+    // Override update to add vertical movement and disable jumping
+    if (this.levelComplete) {
+      return;
+    }
+
+    const speed = 300;
+
+    // Disable gravity for this level to allow free movement
+    this.player.body.setAllowGravity(false);
+
+    let isMovingHorizontal = false;
+    let isMovingVertical = false;
+
+    // Horizontal movement - arrow keys or WASD
+    if (this.cursors.left.isDown || this.aKey.isDown) {
+      this.player.setVelocityX(-speed);
+      this.player.setFlipX(true);
+      isMovingHorizontal = true;
+    } else if (this.cursors.right.isDown || this.dKey.isDown) {
+      this.player.setVelocityX(speed);
+      this.player.setFlipX(false);
+      isMovingHorizontal = true;
+    } else {
+      this.player.setVelocityX(0);
+    }
+
+    // Vertical movement - W/S or Up/Down arrow keys
+    if (this.cursors.up.isDown || this.wKey.isDown) {
+      this.player.setVelocityY(-speed);
+      isMovingVertical = true;
+    } else if (this.cursors.down.isDown || this.sKey.isDown) {
+      this.player.setVelocityY(speed);
+      isMovingVertical = true;
+    } else {
+      this.player.setVelocityY(0);
+    }
+
+    // Play appropriate animation based on movement
+    if (isMovingHorizontal || isMovingVertical) {
+      if (!this.player.anims.currentAnim || this.player.anims.currentAnim.key !== "run") {
+        this.player.play("run");
+      }
+    } else {
+      // Idle animation when not moving
+      if (!this.player.anims.currentAnim || this.player.anims.currentAnim.key !== "idle") {
+        this.player.play("idle");
+      }
+    }
+
+    // Door logic
+    const distanceToDoor = Phaser.Math.Distance.Between(
+      this.player.x, this.player.y,
+      this.door.x, this.door.y
+    );
+
+    if (distanceToDoor < 200 && !this.doorOpen) {
+      this.doorOpen = true;
+      this.door.play("door_opening");
+      this.door.once("animationcomplete", () => {
+        this.door.play("door_open");
+      });
+    }
+
+    if (Math.abs(this.player.x - this.door.x) < 10 && distanceToDoor < 40 && this.doorOpen && !this.levelComplete) {
+      this.levelComplete = true;
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+      this.player.setFlipX(false);
+      this.player.stop();
+      this.player.play("walkup", true);
+
+      this.player.once("animationcomplete", () => {
+        this.cameras.main.fadeOut(500, 0, 0, 0);
+        this.cameras.main.once("camerafadeoutcomplete", () => {
+          this.onLevelComplete();
+        });
+      });
+    }
   }
 
   createPlatforms() {
