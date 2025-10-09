@@ -43,6 +43,18 @@ export class Level18Scene extends BaseScene {
       platformWidth,
       platformHeight
     );
+
+    // Create a square obstacle at the center of the level (will move up/down later)
+    const squareSize = 150;
+    this.centerSquare = this.add.rectangle(
+      window.innerWidth / 2,
+      window.innerHeight - 250,
+      squareSize,
+      squareSize,
+      this.platformColor
+    );
+    this.physics.add.existing(this.centerSquare, true); // Static body
+    this.platforms.add(this.centerSquare);
   }
 
   onLevelComplete() {
