@@ -39,6 +39,21 @@ export class Level18Scene extends BaseScene {
       return;
     }
 
+    // Kill player if they touch the actual ground floor (not on any platform)
+    const isOnGround = this.player.body.touching.down || this.player.body.blocked.down;
+    if (this.player.y >= window.innerHeight - this.groundPlatformHeight + 50 && isOnGround && !this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
+      return;
+    }
+
     const speed = 300;
     const jumpPower = -400;
 
