@@ -35,6 +35,7 @@ export class Level18Scene extends BaseScene {
     // Track falling ball state
     this.ballTriggered = false;
     this.fallingBall = null;
+    this.ballBounceCount = 0;
   }
 
   update() {
@@ -158,8 +159,15 @@ export class Level18Scene extends BaseScene {
         this.fallingBall.body.setCollideWorldBounds(true); // Don't go off screen
         this.fallingBall.setDepth(15);
 
-        // Make it collide with platforms
-        this.physics.add.collider(this.fallingBall, this.platforms);
+        // Make it collide with platforms and track bounces
+        this.physics.add.collider(this.fallingBall, this.platforms, () => {
+          this.ballBounceCount++;
+
+          // After 2 bounces, remove bounce and let it settle
+          if (this.ballBounceCount >= 2) {
+            this.fallingBall.body.setBounce(0);
+          }
+        });
       }
     }
 
