@@ -44,6 +44,10 @@ export class Level19Scene extends BaseScene {
   }
 
   createPlatforms() {
+    // Initialize spike arrays
+    this.middlePlatformSpikes = [];
+    this.middlePlatformSpikeColliders = [];
+
     // Right side platform where player spawns (300x150)
     const platformWidth = 300;
     const platformHeight = 150;
@@ -82,6 +86,25 @@ export class Level19Scene extends BaseScene {
       rightAttachedPlatformHeight
     );
 
+    // Add spikes on left side of right attached platform
+    const rightAttachedSpikeSpacing = 25;
+    const rightPlatformSpikeCount = Math.floor(rightAttachedPlatformHeight / rightAttachedSpikeSpacing);
+    for (let i = 0; i < rightPlatformSpikeCount; i++) {
+      const spikeX = rightAttachedPlatformX - rightAttachedPlatformWidth / 2;
+      const spikeY = rightAttachedPlatformY - rightAttachedPlatformHeight / 2 + (i * rightAttachedSpikeSpacing) + rightAttachedSpikeSpacing / 2;
+
+      const spike = this.add.image(spikeX, spikeY, "spike");
+      spike.setOrigin(0.5, 1);
+      spike.setAngle(-90);
+      spike.setDepth(11);
+      this.middlePlatformSpikes.push(spike);
+
+      const collider = this.add.rectangle(spikeX - 10, spikeY, 7, 10);
+      collider.setDepth(10);
+      this.physics.add.existing(collider, true);
+      this.middlePlatformSpikeColliders.push(collider);
+    }
+
     // Platform to the left of right bottom platform
     const middlePlatformX = window.innerWidth - platformWidth / 2 - platformWidth - 400;
     const middlePlatformY = window.innerHeight - platformHeight / 2 - 50;
@@ -96,9 +119,6 @@ export class Level19Scene extends BaseScene {
     );
 
     // Create spikes on all sides of the middle platform
-    this.middlePlatformSpikes = [];
-    this.middlePlatformSpikeColliders = [];
-
     const spikeSpacing = 20;
     const cornerOffset = 20; // Offset to avoid corner overlaps
 
