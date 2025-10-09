@@ -191,7 +191,7 @@ export class Level19Scene extends BaseScene {
     const attachedPlatformWidth = 250;
     const attachedPlatformHeight = 100;
     const attachedPlatformX = leftTopPlatformX + leftTopPlatformWidth / 2 + attachedPlatformWidth / 2;
-    const attachedPlatformY = leftTopPlatformY - 150;
+    const attachedPlatformY = leftTopPlatformY - 160;
 
     this.createPlatform(
       attachedPlatformX,
@@ -203,7 +203,7 @@ export class Level19Scene extends BaseScene {
     // Similar platform 200px below the first attached platform
     this.createPlatform(
       attachedPlatformX,
-      attachedPlatformY + 300,
+      attachedPlatformY + 320,
       attachedPlatformWidth,
       attachedPlatformHeight
     );
