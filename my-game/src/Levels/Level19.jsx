@@ -17,6 +17,16 @@ export class Level19Scene extends BaseScene {
     this.load.image("background19", "/background 1/orig_big19.png");
     // Load spike image
     this.load.image("spike", "/Spike.png");
+
+    // Load up and down movement spritesheets
+    this.load.spritesheet("MoveUp", "/walk_Up.png", {
+      frameWidth: 48,
+      frameHeight: 64,
+    });
+    this.load.spritesheet("MoveDown", "/walk_Down.png", {
+      frameWidth: 48,
+      frameHeight: 64,
+    });
   }
 
   create() {
@@ -28,6 +38,25 @@ export class Level19Scene extends BaseScene {
 
     // Add S key for downward movement
     this.sKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+
+    // Create animations for up and down movement (similar to BaseScene)
+    if (!this.anims.exists("moveup")) {
+      this.anims.create({
+        key: "moveup",
+        frames: this.anims.generateFrameNumbers("MoveUp", { start: 0, end: 7 }),
+        frameRate: 20,
+        repeat: -1,
+      });
+    }
+
+    if (!this.anims.exists("movedown")) {
+      this.anims.create({
+        key: "movedown",
+        frames: this.anims.generateFrameNumbers("MoveDown", { start: 0, end: 7 }),
+        frameRate: 20,
+        repeat: -1,
+      });
+    }
 
     // Move door to the top platform
     const topPlatformY = window.innerHeight - 150 / 2 - 420;
@@ -73,23 +102,31 @@ export class Level19Scene extends BaseScene {
     if (this.cursors.up.isDown || this.wKey.isDown) {
       this.player.setVelocityY(-speed);
       isMovingVertical = true;
+
+      // Play moveup animation only when moving vertically without horizontal movement
+      if (!isMovingHorizontal && this.player.anims.currentAnim.key !== "moveup") {
+        this.player.play("moveup");
+      }
     } else if (this.cursors.down.isDown || this.sKey.isDown) {
       this.player.setVelocityY(speed);
       isMovingVertical = true;
+
+      // Play movedown animation only when moving vertically without horizontal movement
+      if (!isMovingHorizontal && this.player.anims.currentAnim.key !== "movedown") {
+        this.player.play("movedown");
+      }
     } else {
       this.player.setVelocityY(0);
     }
 
-    // Play appropriate animation based on movement
-    if (isMovingHorizontal || isMovingVertical) {
-      if (!this.player.anims.currentAnim || this.player.anims.currentAnim.key !== "run") {
-        this.player.play("run");
-      }
-    } else {
-      // Idle animation when not moving
-      if (!this.player.anims.currentAnim || this.player.anims.currentAnim.key !== "idle") {
-        this.player.play("idle");
-      }
+    // Play run animation when moving horizontally (takes priority over vertical)
+    if (isMovingHorizontal && this.player.anims.currentAnim.key !== "run") {
+      this.player.play("run");
+    }
+
+    // Idle animation when not moving at all
+    if (!isMovingHorizontal && !isMovingVertical && this.player.anims.currentAnim.key !== "idle") {
+      this.player.play("idle");
     }
 
     // Door logic
