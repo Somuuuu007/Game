@@ -55,6 +55,14 @@ export class Level19Scene extends BaseScene {
       platformHeight + 100
     );
 
+    // Platform to the left of right bottom platform
+    this.createPlatform(
+      window.innerWidth - platformWidth / 2 - platformWidth - 400,
+      window.innerHeight - platformHeight / 2 -50,
+      platformWidth - 50,
+      platformHeight - 20
+    );
+
     // Left top platform (same as right top)
     this.createPlatform(
       platformWidth / 2 ,
@@ -63,6 +71,7 @@ export class Level19Scene extends BaseScene {
       platformHeight + 400
     );
   }
+
 
   onLevelComplete() {
     // Save next level to localStorage
