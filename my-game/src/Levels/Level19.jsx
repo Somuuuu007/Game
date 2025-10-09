@@ -200,13 +200,51 @@ export class Level19Scene extends BaseScene {
       attachedPlatformHeight
     );
 
-    // Similar platform 200px below the first attached platform
+    // Add spikes on right side of first attached platform
+    const attachedSpikeSpacing = 25; // Increased spacing to avoid overlap
+    const firstPlatformSpikeCount = Math.floor(attachedPlatformHeight / attachedSpikeSpacing);
+    for (let i = 0; i < firstPlatformSpikeCount; i++) {
+      const spikeX = attachedPlatformX + attachedPlatformWidth / 2;
+      const spikeY = attachedPlatformY - attachedPlatformHeight / 2 + (i * attachedSpikeSpacing) + attachedSpikeSpacing / 2;
+
+      const spike = this.add.image(spikeX, spikeY, "spike");
+      spike.setOrigin(0.5, 1); // Adjusted origin to align at border
+      spike.setAngle(90);
+      spike.setDepth(11);
+      this.middlePlatformSpikes.push(spike);
+
+      const collider = this.add.rectangle(spikeX + 10, spikeY, 7, 10);
+      collider.setDepth(10);
+      this.physics.add.existing(collider, true);
+      this.middlePlatformSpikeColliders.push(collider);
+    }
+
+    // Similar platform 320px below the first attached platform
+    const secondAttachedPlatformY = attachedPlatformY + 320;
     this.createPlatform(
       attachedPlatformX,
-      attachedPlatformY + 320,
+      secondAttachedPlatformY,
       attachedPlatformWidth,
       attachedPlatformHeight
     );
+
+    // Add spikes on right side of second attached platform
+    const secondPlatformSpikeCount = Math.floor(attachedPlatformHeight / attachedSpikeSpacing);
+    for (let i = 0; i < secondPlatformSpikeCount; i++) {
+      const spikeX = attachedPlatformX + attachedPlatformWidth / 2;
+      const spikeY = secondAttachedPlatformY - attachedPlatformHeight / 2 + (i * attachedSpikeSpacing) + attachedSpikeSpacing / 2;
+
+      const spike = this.add.image(spikeX, spikeY, "spike");
+      spike.setOrigin(0.5, 1); // Adjusted origin to align at border
+      spike.setAngle(90);
+      spike.setDepth(11);
+      this.middlePlatformSpikes.push(spike);
+
+      const collider = this.add.rectangle(spikeX + 10, spikeY, 7, 10);
+      collider.setDepth(10);
+      this.physics.add.existing(collider, true);
+      this.middlePlatformSpikeColliders.push(collider);
+    }
   }
 
 
