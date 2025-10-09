@@ -57,10 +57,10 @@ export class Level19Scene extends BaseScene {
 
     // Left top platform (same as right top)
     this.createPlatform(
-      platformWidth / 2,
+      platformWidth / 2 ,
       window.innerHeight - platformHeight / 2 - 420,
-      platformWidth + 700,
-      platformHeight + 100
+      platformWidth + 300,
+      platformHeight + 400
     );
   }
 
