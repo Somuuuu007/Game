@@ -29,7 +29,20 @@ export class Level18Scene extends BaseScene {
   }
 
   createPlatforms() {
-    // Add Level 18 specific platforms here
+    // Second platform in front of the ground platform (top surfaces aligned)
+    const platformWidth = 200;
+    const platformHeight = 20;
+    const groundPlatformHeight = 200;
+
+    // Ground platform top surface is at: window.innerHeight - groundPlatformHeight
+    // Front platform should have its top at the same position
+    // So its center Y should be: topSurface + platformHeight/2
+    this.frontPlatform = this.createPlatform(
+      platformWidth + platformWidth / 2,
+      window.innerHeight - groundPlatformHeight + platformHeight / 2,
+      platformWidth,
+      platformHeight
+    );
   }
 
   onLevelComplete() {
