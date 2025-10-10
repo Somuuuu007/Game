@@ -264,11 +264,11 @@ export class Level19Scene extends BaseScene {
       const spike = this.add.image(spikeX, spikeY, "spike");
       spike.setOrigin(0.5, 1);
       spike.setAngle(-90);
-      spike.setDepth(11);
+      spike.setDepth(5); // Lower depth so middle platform appears on top
       this.allSpikes.push(spike);
 
       const collider = this.add.rectangle(spikeX - 10, spikeY, 7, 10);
-      collider.setDepth(10);
+      collider.setDepth(4); // Lower depth
       this.physics.add.existing(collider, true);
       this.allSpikeColliders.push(collider);
     }
@@ -287,6 +287,7 @@ export class Level19Scene extends BaseScene {
       middlePlatformWidth,
       middlePlatformHeight
     );
+    this.middlePlatformRect.setDepth(15); // Higher depth so it appears on top of other spikes
 
     // Create spikes on all sides of the middle platform
     const spikeSpacing = 20;
@@ -301,12 +302,12 @@ export class Level19Scene extends BaseScene {
       const spike = this.add.image(spikeX, spikeY, "spike");
       spike.setOrigin(0.5, 1);
       spike.setAngle(0);
-      spike.setDepth(11);
+      spike.setDepth(16); // Higher depth for middle platform spikes
       this.middlePlatformSpikes.push(spike);
       this.middlePlatformSpikeOriginalPositions.push({ x: spikeX, y: spikeY });
 
       const collider = this.add.rectangle(spikeX, spikeY - 10, 10, 7);
-      collider.setDepth(10);
+      collider.setDepth(15);
       this.physics.add.existing(collider, true);
       this.middlePlatformSpikeColliders.push(collider);
       this.middlePlatformSpikeColliderOriginalPositions.push({ x: spikeX, y: spikeY - 10 });
@@ -321,12 +322,12 @@ export class Level19Scene extends BaseScene {
       const spike = this.add.image(spikeX, spikeY, "spike");
       spike.setOrigin(0.5, 1); // Changed from (0.5, 0) to (0.5, 1) to align at border
       spike.setAngle(180);
-      spike.setDepth(11);
+      spike.setDepth(16); // Higher depth for middle platform spikes
       this.middlePlatformSpikes.push(spike);
       this.middlePlatformSpikeOriginalPositions.push({ x: spikeX, y: spikeY });
 
       const collider = this.add.rectangle(spikeX, spikeY + 10, 10, 7);
-      collider.setDepth(10);
+      collider.setDepth(15);
       this.physics.add.existing(collider, true);
       this.middlePlatformSpikeColliders.push(collider);
       this.middlePlatformSpikeColliderOriginalPositions.push({ x: spikeX, y: spikeY + 10 });
@@ -341,12 +342,12 @@ export class Level19Scene extends BaseScene {
       const spike = this.add.image(spikeX, spikeY, "spike");
       spike.setOrigin(0.7, 1); // Changed to (0, 0.5) so spikes point inward
       spike.setAngle(-90);
-      spike.setDepth(11);
+      spike.setDepth(16); // Higher depth for middle platform spikes
       this.middlePlatformSpikes.push(spike);
       this.middlePlatformSpikeOriginalPositions.push({ x: spikeX, y: spikeY });
 
       const collider = this.add.rectangle(spikeX - 10, spikeY, 7, 10);
-      collider.setDepth(10);
+      collider.setDepth(15);
       this.physics.add.existing(collider, true);
       this.middlePlatformSpikeColliders.push(collider);
       this.middlePlatformSpikeColliderOriginalPositions.push({ x: spikeX - 10, y: spikeY });
@@ -361,12 +362,12 @@ export class Level19Scene extends BaseScene {
       const spike = this.add.image(spikeX, spikeY, "spike");
       spike.setOrigin(0.2, 1); // Changed to (0, 0.5) so spikes point inward
       spike.setAngle(90);
-      spike.setDepth(11);
+      spike.setDepth(16); // Higher depth for middle platform spikes
       this.middlePlatformSpikes.push(spike);
       this.middlePlatformSpikeOriginalPositions.push({ x: spikeX, y: spikeY });
 
       const collider = this.add.rectangle(spikeX + 10, spikeY, 7, 10);
-      collider.setDepth(10);
+      collider.setDepth(15);
       this.physics.add.existing(collider, true);
       this.middlePlatformSpikeColliders.push(collider);
       this.middlePlatformSpikeColliderOriginalPositions.push({ x: spikeX + 10, y: spikeY });
@@ -411,11 +412,11 @@ export class Level19Scene extends BaseScene {
       const spike = this.add.image(spikeX, spikeY, "spike");
       spike.setOrigin(0.5, 1); // Adjusted origin to align at border
       spike.setAngle(90);
-      spike.setDepth(11);
+      spike.setDepth(5); // Lower depth so middle platform appears on top
       this.allSpikes.push(spike);
 
       const collider = this.add.rectangle(spikeX + 10, spikeY, 7, 10);
-      collider.setDepth(10);
+      collider.setDepth(4); // Lower depth
       this.physics.add.existing(collider, true);
       this.allSpikeColliders.push(collider);
     }
@@ -438,11 +439,11 @@ export class Level19Scene extends BaseScene {
       const spike = this.add.image(spikeX, spikeY, "spike");
       spike.setOrigin(0.5, 1); // Adjusted origin to align at border
       spike.setAngle(90);
-      spike.setDepth(11);
+      spike.setDepth(5); // Lower depth so middle platform appears on top
       this.allSpikes.push(spike);
 
       const collider = this.add.rectangle(spikeX + 10, spikeY, 7, 10);
-      collider.setDepth(10);
+      collider.setDepth(4); // Lower depth
       this.physics.add.existing(collider, true);
       this.allSpikeColliders.push(collider);
     }
