@@ -149,7 +149,7 @@ export class Level19Scene extends BaseScene {
       this.tweens.add({
         targets: this.middlePlatformRect,
         y: 0, // Move to top of screen
-        duration: 8000, // Very slow - 8 seconds
+        duration: 3000, // 4 seconds (faster)
         ease: 'Linear',
         onUpdate: () => {
           // Update physics body position
