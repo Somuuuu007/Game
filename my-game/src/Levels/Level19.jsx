@@ -64,11 +64,21 @@ export class Level19Scene extends BaseScene {
     this.door.y = topPlatformY - 250 / 2;
 
     // Add collision detection for all spike colliders after player is created
+    if (this.allSpikeColliders) {
+      this.allSpikeColliders.forEach(collider => {
+        this.physics.add.overlap(this.player, collider, this.handleSpikeCollision, null, this);
+      });
+    }
+
+    // Also add collision detection for middle platform spike colliders
     if (this.middlePlatformSpikeColliders) {
       this.middlePlatformSpikeColliders.forEach(collider => {
         this.physics.add.overlap(this.player, collider, this.handleSpikeCollision, null, this);
       });
     }
+
+    // Track if middle platform animation has been triggered
+    this.middlePlatformTriggered = false;
   }
 
   update() {
@@ -129,6 +139,43 @@ export class Level19Scene extends BaseScene {
       this.player.play("idle");
     }
 
+    // Check if player has crossed the first left platform with spikes
+    // This is the platform at attachedPlatformX (first one on left side)
+    if (!this.middlePlatformTriggered && this.player.x < this.firstLeftPlatformX) {
+      this.middlePlatformTriggered = true;
+
+      // Start moving the middle platform (with all spikes) upward slowly
+      // The middle platform is stored as this.middlePlatformRect
+      this.tweens.add({
+        targets: this.middlePlatformRect,
+        y: 0, // Move to top of screen
+        duration: 8000, // Very slow - 8 seconds
+        ease: 'Linear',
+        onUpdate: () => {
+          // Update physics body position
+          if (this.middlePlatformRect.body) {
+            this.middlePlatformRect.body.updateFromGameObject();
+          }
+
+          // Update all spike positions to follow the platform
+          if (this.middlePlatformSpikes) {
+            const deltaY = this.middlePlatformRect.y - this.middlePlatformOriginalY;
+
+            this.middlePlatformSpikes.forEach((spike, index) => {
+              spike.y = this.middlePlatformSpikeOriginalPositions[index].y + deltaY;
+            });
+
+            this.middlePlatformSpikeColliders.forEach((collider, index) => {
+              collider.y = this.middlePlatformSpikeColliderOriginalPositions[index].y + deltaY;
+              if (collider.body) {
+                collider.body.updateFromGameObject();
+              }
+            });
+          }
+        }
+      });
+    }
+
     // Door logic
     const distanceToDoor = Phaser.Math.Distance.Between(
       this.player.x, this.player.y,
@@ -161,9 +208,13 @@ export class Level19Scene extends BaseScene {
   }
 
   createPlatforms() {
-    // Initialize spike arrays
-    this.middlePlatformSpikes = [];
-    this.middlePlatformSpikeColliders = [];
+    // Initialize spike arrays and position tracking
+    this.allSpikes = []; // All spikes for collision detection
+    this.allSpikeColliders = []; // All spike colliders for collision detection
+    this.middlePlatformSpikes = []; // Only middle platform spikes (for animation)
+    this.middlePlatformSpikeColliders = []; // Only middle platform spike colliders (for animation)
+    this.middlePlatformSpikeOriginalPositions = [];
+    this.middlePlatformSpikeColliderOriginalPositions = [];
 
     // Right side platform where player spawns (300x150)
     const platformWidth = 300;
@@ -214,21 +265,23 @@ export class Level19Scene extends BaseScene {
       spike.setOrigin(0.5, 1);
       spike.setAngle(-90);
       spike.setDepth(11);
-      this.middlePlatformSpikes.push(spike);
+      this.allSpikes.push(spike);
 
       const collider = this.add.rectangle(spikeX - 10, spikeY, 7, 10);
       collider.setDepth(10);
       this.physics.add.existing(collider, true);
-      this.middlePlatformSpikeColliders.push(collider);
+      this.allSpikeColliders.push(collider);
     }
 
-    // Platform to the left of right bottom platform
+    // Platform to the left of right bottom platform (this is the main spike platform that will move)
     const middlePlatformX = window.innerWidth - platformWidth / 2 - platformWidth - 400;
     const middlePlatformY = window.innerHeight - platformHeight / 2 - 50;
     const middlePlatformWidth = platformWidth - 50;
     const middlePlatformHeight = platformHeight - 20;
 
-    this.createPlatform(
+    // Store original position and reference to the platform rectangle
+    this.middlePlatformOriginalY = middlePlatformY;
+    this.middlePlatformRect = this.createPlatform(
       middlePlatformX,
       middlePlatformY,
       middlePlatformWidth,
@@ -250,11 +303,13 @@ export class Level19Scene extends BaseScene {
       spike.setAngle(0);
       spike.setDepth(11);
       this.middlePlatformSpikes.push(spike);
+      this.middlePlatformSpikeOriginalPositions.push({ x: spikeX, y: spikeY });
 
       const collider = this.add.rectangle(spikeX, spikeY - 10, 10, 7);
       collider.setDepth(10);
       this.physics.add.existing(collider, true);
       this.middlePlatformSpikeColliders.push(collider);
+      this.middlePlatformSpikeColliderOriginalPositions.push({ x: spikeX, y: spikeY - 10 });
     }
 
     // Bottom spikes (excluding corners) - add 1 more spike
@@ -268,11 +323,13 @@ export class Level19Scene extends BaseScene {
       spike.setAngle(180);
       spike.setDepth(11);
       this.middlePlatformSpikes.push(spike);
+      this.middlePlatformSpikeOriginalPositions.push({ x: spikeX, y: spikeY });
 
       const collider = this.add.rectangle(spikeX, spikeY + 10, 10, 7);
       collider.setDepth(10);
       this.physics.add.existing(collider, true);
       this.middlePlatformSpikeColliders.push(collider);
+      this.middlePlatformSpikeColliderOriginalPositions.push({ x: spikeX, y: spikeY + 10 });
     }
 
     // Left spikes (including full height) - rotated 180 degrees from original
@@ -286,11 +343,13 @@ export class Level19Scene extends BaseScene {
       spike.setAngle(-90);
       spike.setDepth(11);
       this.middlePlatformSpikes.push(spike);
+      this.middlePlatformSpikeOriginalPositions.push({ x: spikeX, y: spikeY });
 
       const collider = this.add.rectangle(spikeX - 10, spikeY, 7, 10);
       collider.setDepth(10);
       this.physics.add.existing(collider, true);
       this.middlePlatformSpikeColliders.push(collider);
+      this.middlePlatformSpikeColliderOriginalPositions.push({ x: spikeX - 10, y: spikeY });
     }
 
     // Right spikes (including full height) - rotated 180 degrees from original
@@ -304,11 +363,13 @@ export class Level19Scene extends BaseScene {
       spike.setAngle(90);
       spike.setDepth(11);
       this.middlePlatformSpikes.push(spike);
+      this.middlePlatformSpikeOriginalPositions.push({ x: spikeX, y: spikeY });
 
       const collider = this.add.rectangle(spikeX + 10, spikeY, 7, 10);
       collider.setDepth(10);
       this.physics.add.existing(collider, true);
       this.middlePlatformSpikeColliders.push(collider);
+      this.middlePlatformSpikeColliderOriginalPositions.push({ x: spikeX + 10, y: spikeY });
     }
 
     // Left top platform (same as right top)
@@ -330,6 +391,9 @@ export class Level19Scene extends BaseScene {
     const attachedPlatformX = leftTopPlatformX + leftTopPlatformWidth / 2 + attachedPlatformWidth / 2;
     const attachedPlatformY = leftTopPlatformY - 160;
 
+    // Store this position to trigger middle platform animation
+    this.firstLeftPlatformX = attachedPlatformX;
+
     this.createPlatform(
       attachedPlatformX,
       attachedPlatformY,
@@ -348,12 +412,12 @@ export class Level19Scene extends BaseScene {
       spike.setOrigin(0.5, 1); // Adjusted origin to align at border
       spike.setAngle(90);
       spike.setDepth(11);
-      this.middlePlatformSpikes.push(spike);
+      this.allSpikes.push(spike);
 
       const collider = this.add.rectangle(spikeX + 10, spikeY, 7, 10);
       collider.setDepth(10);
       this.physics.add.existing(collider, true);
-      this.middlePlatformSpikeColliders.push(collider);
+      this.allSpikeColliders.push(collider);
     }
 
     // Similar platform 320px below the first attached platform
@@ -375,12 +439,12 @@ export class Level19Scene extends BaseScene {
       spike.setOrigin(0.5, 1); // Adjusted origin to align at border
       spike.setAngle(90);
       spike.setDepth(11);
-      this.middlePlatformSpikes.push(spike);
+      this.allSpikes.push(spike);
 
       const collider = this.add.rectangle(spikeX + 10, spikeY, 7, 10);
       collider.setDepth(10);
       this.physics.add.existing(collider, true);
-      this.middlePlatformSpikeColliders.push(collider);
+      this.allSpikeColliders.push(collider);
     }
   }
 
