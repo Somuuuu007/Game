@@ -148,8 +148,8 @@ export class Level19Scene extends BaseScene {
       // The middle platform is stored as this.middlePlatformRect
       this.tweens.add({
         targets: this.middlePlatformRect,
-        y: 0, // Move to top of screen
-        duration: 3000, // 4 seconds (faster)
+        y: 50, // Stop a bit before the top of screen
+        duration: 3000, // 3 seconds
         ease: 'Linear',
         onUpdate: () => {
           // Update physics body position
@@ -160,18 +160,55 @@ export class Level19Scene extends BaseScene {
           // Update all spike positions to follow the platform
           if (this.middlePlatformSpikes) {
             const deltaY = this.middlePlatformRect.y - this.middlePlatformOriginalY;
+            const deltaX = this.middlePlatformRect.x - this.middlePlatformOriginalX;
 
             this.middlePlatformSpikes.forEach((spike, index) => {
+              spike.x = this.middlePlatformSpikeOriginalPositions[index].x + deltaX;
               spike.y = this.middlePlatformSpikeOriginalPositions[index].y + deltaY;
             });
 
             this.middlePlatformSpikeColliders.forEach((collider, index) => {
+              collider.x = this.middlePlatformSpikeColliderOriginalPositions[index].x + deltaX;
               collider.y = this.middlePlatformSpikeColliderOriginalPositions[index].y + deltaY;
               if (collider.body) {
                 collider.body.updateFromGameObject();
               }
             });
           }
+        },
+        onComplete: () => {
+          // After reaching the top, move horizontally to the center of the door
+          this.tweens.add({
+            targets: this.middlePlatformRect,
+            x: this.door.x, // Move to door's X position (center)
+            duration: 500, // 1.5 seconds (faster)
+            ease: 'Linear',
+            onUpdate: () => {
+              // Update physics body position
+              if (this.middlePlatformRect.body) {
+                this.middlePlatformRect.body.updateFromGameObject();
+              }
+
+              // Update all spike positions to follow the platform
+              if (this.middlePlatformSpikes) {
+                const deltaY = this.middlePlatformRect.y - this.middlePlatformOriginalY;
+                const deltaX = this.middlePlatformRect.x - this.middlePlatformOriginalX;
+
+                this.middlePlatformSpikes.forEach((spike, index) => {
+                  spike.x = this.middlePlatformSpikeOriginalPositions[index].x + deltaX;
+                  spike.y = this.middlePlatformSpikeOriginalPositions[index].y + deltaY;
+                });
+
+                this.middlePlatformSpikeColliders.forEach((collider, index) => {
+                  collider.x = this.middlePlatformSpikeColliderOriginalPositions[index].x + deltaX;
+                  collider.y = this.middlePlatformSpikeColliderOriginalPositions[index].y + deltaY;
+                  if (collider.body) {
+                    collider.body.updateFromGameObject();
+                  }
+                });
+              }
+            }
+          });
         }
       });
     }
@@ -280,6 +317,7 @@ export class Level19Scene extends BaseScene {
     const middlePlatformHeight = platformHeight - 20;
 
     // Store original position and reference to the platform rectangle
+    this.middlePlatformOriginalX = middlePlatformX;
     this.middlePlatformOriginalY = middlePlatformY;
     this.middlePlatformRect = this.createPlatform(
       middlePlatformX,
