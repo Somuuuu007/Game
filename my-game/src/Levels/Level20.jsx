@@ -9,7 +9,10 @@ export class Level20Scene extends BaseScene {
     this.groundPlatformHeight = 80; // Smaller height for this level
     this.platformColor = 0x212121; // Dark color for this level
     this.levelWidth = window.innerWidth; // Single screen width for this level
-    this.doorX = 150; // Door on the left side
+    this.leftPlatformHeight = 250;
+    this.doorX = 100; // Door on the left side
+    // Door Y position: top of left platform (screen height - ground platform - left platform height)
+    this.doorY = window.innerHeight - this.groundPlatformHeight - this.leftPlatformHeight;
   }
 
   loadLevelAssets() {
@@ -25,6 +28,9 @@ export class Level20Scene extends BaseScene {
     // Move player to the right side
     this.player.x = window.innerWidth - 250;
     this.player.y = window.innerHeight - 130;
+
+    // Reposition door above the left platform
+    this.door.y = this.doorY;
 
     // Track if spikes are visible
     this.spikesVisible = false;
@@ -222,6 +228,14 @@ export class Level20Scene extends BaseScene {
       secondPlatformY,
       platformWidth,
       secondPlatformHeight
+    );
+
+    // Left side tall platform for the door
+    this.leftPlatform = this.createPlatform(
+      platformWidth / 2,
+      window.innerHeight - this.groundPlatformHeight - this.leftPlatformHeight / 2,
+      platformWidth,
+      this.leftPlatformHeight
     );
 
     // Create spikes above the second platform (invisible by default)
