@@ -46,10 +46,43 @@ export class Level20Scene extends BaseScene {
     // Track falling balls
     this.ballsTriggered = false;
     this.fallingBalls = [];
+    // Track floating platforms visibility
+    this.floatingPlatform1Visible = false;
+    this.floatingPlatform2Visible = false;
   }
 
   update() {
     super.update();
+
+    // Check if player is on floating platform 1 and make it visible
+    if (!this.floatingPlatform1Visible && this.floatingPlatform1) {
+      const playerBottom = this.player.y + this.player.height / 2;
+      const platform1Top = this.floatingPlatform1.y - 10; // Top of platform
+      const platform1Left = this.floatingPlatform1.x - 40;
+      const platform1Right = this.floatingPlatform1.x + 40;
+
+      // Check if player is standing on top of the platform
+      if (this.player.x > platform1Left && this.player.x < platform1Right &&
+          Math.abs(playerBottom - platform1Top) < 5 && this.player.body.touching.down) {
+        this.floatingPlatform1Visible = true;
+        this.floatingPlatform1.setAlpha(1);
+      }
+    }
+
+    // Check if player is on floating platform 2 and make it visible
+    if (!this.floatingPlatform2Visible && this.floatingPlatform2) {
+      const playerBottom = this.player.y + this.player.height / 2;
+      const platform2Top = this.floatingPlatform2.y - 10; // Top of platform
+      const platform2Left = this.floatingPlatform2.x - 40;
+      const platform2Right = this.floatingPlatform2.x + 40;
+
+      // Check if player is standing on top of the platform
+      if (this.player.x > platform2Left && this.player.x < platform2Right &&
+          Math.abs(playerBottom - platform2Top) < 5 && this.player.body.touching.down) {
+        this.floatingPlatform2Visible = true;
+        this.floatingPlatform2.setAlpha(1);
+      }
+    }
 
     // Check if player is near the gap and trigger balls
     if (!this.ballsTriggered && this.thirdPlatform && this.secondPlatform) {
@@ -259,6 +292,7 @@ export class Level20Scene extends BaseScene {
       80,
       20
     );
+    this.floatingPlatform1.setAlpha(0); // Invisible by default
 
     // Second floating platform (closer to left platform and door, on the left - higher)
     const floatingPlatform2X = invisibleLeftPlatformRight + 100;
@@ -269,6 +303,7 @@ export class Level20Scene extends BaseScene {
       80,
       20
     );
+    this.floatingPlatform2.setAlpha(0); // Invisible by default
 
     // Create spikes above the second platform (invisible by default)
     this.spikes = [];
