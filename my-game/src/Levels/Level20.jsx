@@ -7,7 +7,7 @@ export class Level20Scene extends BaseScene {
     super("Level20");
     this.backgroundKey = "background20";
     this.groundPlatformHeight = 80; // Smaller height for this level
-    this.platformColor = 0x000000; // Dark color for this level
+    this.platformColor = 0x212121; // Dark color for this level
     this.levelWidth = window.innerWidth; // Single screen width for this level
     this.doorX = window.innerWidth - 150; // Door near the end
   }
