@@ -30,10 +30,52 @@ export class Level20Scene extends BaseScene {
     this.spikesVisible = false;
     // Track if platform is moving
     this.platformMoving = false;
+    // Track falling balls
+    this.fallingBalls = [];
+    this.ballsStable = [];
+    // Track if balls have been triggered
+    this.ballsTriggered = false;
   }
 
   update() {
     super.update();
+
+    // Check if player is in the gap between third and second platforms and trigger balls
+    if (!this.ballsTriggered && this.thirdPlatform && this.secondPlatform) {
+      const platformWidth = 200;
+      const gapStart = this.thirdPlatform.x + platformWidth / 2 + 50; // Add 50px buffer
+      const gapEnd = this.secondPlatform.x - platformWidth / 2 - 50; // Add 50px buffer
+      const gapCenter = (gapStart + gapEnd) / 2;
+
+      // Trigger balls when player is near the center of the gap
+      if (Math.abs(this.player.x - gapCenter) < 50) {
+        this.ballsTriggered = true;
+        this.createFallingBalls();
+      }
+    }
+
+    // Check falling balls and detect collision with player
+    this.fallingBalls.forEach((ball, index) => {
+      // Check if ball is stable (not moving much)
+      if (ball.body && Math.abs(ball.body.velocity.y) < 10 && Math.abs(ball.body.velocity.x) < 10) {
+        if (!this.ballsStable[index]) {
+          this.ballsStable[index] = true;
+        }
+      }
+
+      // Only kill player if ball is not stable
+      if (!this.ballsStable[index] && !this.levelComplete) {
+        const distanceToBall = Phaser.Math.Distance.Between(
+          this.player.x, this.player.y,
+          ball.x, ball.y
+        );
+
+        // Kill player if within 30 pixels radius
+        if (distanceToBall < 30) {
+          this.handleBallCollision();
+        }
+      }
+    });
 
     // Check if player is close to the second platform and make spikes visible
     if (!this.spikesVisible && this.secondPlatform) {
@@ -158,6 +200,20 @@ export class Level20Scene extends BaseScene {
     this.spikeColliders = [];
   }
 
+  handleBallCollision() {
+    if (!this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
+    }
+  }
+
   handleSpikeCollision() {
     if (!this.levelComplete) {
       this.levelComplete = true;
@@ -235,6 +291,50 @@ export class Level20Scene extends BaseScene {
       this.spikeColliders.push(collider);
       this.spikeColliderOriginalPositions.push({ x: spikeX, y: spikeY - 10 });
     }
+
+    // Store platform positions for ball creation
+    this.thirdPlatformX = thirdPlatformX;
+    this.ballGap = gap;
+  }
+
+  createFallingBalls() {
+    // Create 3 falling balls between third and second platforms
+    const platformWidth = 200;
+    const ballGapX = this.thirdPlatformX + platformWidth / 2 + this.ballGap / 2;
+    const ballRadius = 20;
+
+    // Ball 1
+    const ball1 = this.add.circle(ballGapX, 0, ballRadius, 0x212121);
+    this.physics.add.existing(ball1);
+    ball1.body.setVelocityY(300);
+    ball1.body.setBounce(0.6);
+    ball1.body.setCollideWorldBounds(true);
+    ball1.setDepth(9); // Below player depth (10)
+    this.physics.add.collider(ball1, this.platforms);
+    this.fallingBalls.push(ball1);
+    this.ballsStable.push(false);
+
+    // Ball 2 - slightly offset
+    const ball2 = this.add.circle(ballGapX - 30, 0, ballRadius, 0x212121);
+    this.physics.add.existing(ball2);
+    ball2.body.setVelocityY(350);
+    ball2.body.setBounce(0.6);
+    ball2.body.setCollideWorldBounds(true);
+    ball2.setDepth(9); // Below player depth (10)
+    this.physics.add.collider(ball2, this.platforms);
+    this.fallingBalls.push(ball2);
+    this.ballsStable.push(false);
+
+    // Ball 3 - slightly offset other direction
+    const ball3 = this.add.circle(ballGapX + 30, 0, ballRadius, 0x212121);
+    this.physics.add.existing(ball3);
+    ball3.body.setVelocityY(400);
+    ball3.body.setBounce(0.6);
+    ball3.body.setCollideWorldBounds(true);
+    ball3.setDepth(9); // Below player depth (10)
+    this.physics.add.collider(ball3, this.platforms);
+    this.fallingBalls.push(ball3);
+    this.ballsStable.push(false);
   }
 
   onLevelComplete() {
