@@ -28,6 +28,8 @@ export class Level20Scene extends BaseScene {
 
     // Track if spikes are visible
     this.spikesVisible = false;
+    // Track if platform is moving
+    this.platformMoving = false;
   }
 
   update() {
@@ -60,7 +62,77 @@ export class Level20Scene extends BaseScene {
         this.spikeColliders.forEach(collider => {
           this.physics.add.overlap(this.player, collider, this.handleSpikeCollision, null, this);
         });
+
+        // Start timer to move platform after 5 seconds
+        this.time.delayedCall(2000, () => {
+          this.movePlatformToRight();
+        });
       }
+    }
+  }
+
+  movePlatformToRight() {
+    if (this.platformMoving) return;
+    this.platformMoving = true;
+
+    // Calculate target position (attach to left side of right platform)
+    const platformWidth = 200;
+    const rightPlatformX = window.innerWidth - platformWidth / 2;
+    const targetX = rightPlatformX - platformWidth; // Position at left side of right platform
+
+    // Store original position for spike movement
+    this.secondPlatformOriginalX = this.secondPlatform.x;
+
+    // Animate platform moving to the right
+    this.tweens.add({
+      targets: this.secondPlatform,
+      x: targetX,
+      duration: 100, // 0.1 second
+      ease: 'Linear',
+      onUpdate: () => {
+        // Update physics body position
+        if (this.secondPlatform.body) {
+          this.secondPlatform.body.updateFromGameObject();
+        }
+
+        // Update spike positions to follow platform
+        const deltaX = this.secondPlatform.x - this.secondPlatformOriginalX;
+
+        this.spikes.forEach((spike, index) => {
+          spike.x = this.spikeOriginalPositions[index].x + deltaX;
+        });
+
+        this.spikeColliders.forEach((collider, index) => {
+          collider.x = this.spikeColliderOriginalPositions[index].x + deltaX;
+          if (collider.body) {
+            collider.body.updateFromGameObject();
+          }
+        });
+
+        // Check if platform hits player during movement
+        if (!this.levelComplete) {
+          const playerBounds = this.player.getBounds();
+          const platformBounds = this.secondPlatform.getBounds();
+
+          if (Phaser.Geom.Intersects.RectangleToRectangle(playerBounds, platformBounds)) {
+            this.handlePlatformCollision();
+          }
+        }
+      }
+    });
+  }
+
+  handlePlatformCollision() {
+    if (!this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
     }
   }
 
@@ -107,6 +179,8 @@ export class Level20Scene extends BaseScene {
     // Create spikes above the second platform (invisible by default)
     this.spikes = [];
     this.spikeColliders = [];
+    this.spikeOriginalPositions = [];
+    this.spikeColliderOriginalPositions = [];
 
     const spikeSpacing = 25;
     const spikeCount = Math.floor(platformWidth / spikeSpacing);
@@ -121,12 +195,14 @@ export class Level20Scene extends BaseScene {
       spike.setDepth(11);
       spike.setAlpha(0); // Invisible by default
       this.spikes.push(spike);
+      this.spikeOriginalPositions.push({ x: spikeX, y: spikeY });
 
       const collider = this.add.rectangle(spikeX, spikeY - 10, 10, 7);
       collider.setDepth(10);
       collider.setAlpha(0); // Invisible by default
       this.physics.add.existing(collider, true);
       this.spikeColliders.push(collider);
+      this.spikeColliderOriginalPositions.push({ x: spikeX, y: spikeY - 10 });
     }
   }
 
