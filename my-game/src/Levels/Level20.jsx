@@ -245,6 +245,31 @@ export class Level20Scene extends BaseScene {
       this.leftPlatformHeight
     );
 
+    // Create two floating platforms in the gap to reach the door
+    const invisibleLeftPlatformRight = this.leftPlatform.x + platformWidth / 2;
+    const invisibleThirdPlatformLeft = thirdPlatformX - platformWidth / 2;
+    const invisibleGapWidth = invisibleThirdPlatformLeft - invisibleLeftPlatformRight;
+
+    // First floating platform (closer to third platform)
+    const floatingPlatform1X = invisibleThirdPlatformLeft - 120;
+    const floatingPlatform1Y = window.innerHeight - this.groundPlatformHeight - 180;
+    this.floatingPlatform1 = this.createPlatform(
+      floatingPlatform1X,
+      floatingPlatform1Y,
+      80,
+      20
+    );
+
+    // Second floating platform (closer to left platform and door)
+    const floatingPlatform2X = invisibleLeftPlatformRight + 120;
+    const floatingPlatform2Y = window.innerHeight - this.groundPlatformHeight - this.leftPlatformHeight + 80;
+    this.floatingPlatform2 = this.createPlatform(
+      floatingPlatform2X,
+      floatingPlatform2Y,
+      80,
+      20
+    );
+
     // Create spikes above the second platform (invisible by default)
     this.spikes = [];
     this.spikeColliders = [];
