@@ -198,6 +198,15 @@ export class Level20Scene extends BaseScene {
       secondPlatformHeight
     );
 
+    // Third platform to the left of the second platform (same gap)
+    const thirdPlatformX = secondPlatformX - platformWidth - gap;
+    this.thirdPlatform = this.createPlatform(
+      thirdPlatformX,
+      secondPlatformY,
+      platformWidth,
+      secondPlatformHeight
+    );
+
     // Create spikes above the second platform (invisible by default)
     this.spikes = [];
     this.spikeColliders = [];
