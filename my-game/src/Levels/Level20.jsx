@@ -15,6 +15,8 @@ export class Level20Scene extends BaseScene {
   loadLevelAssets() {
     // Load Level 20 specific background
     this.load.image("background20", "/background 1/orig_big20.png");
+    // Load spike image
+    this.load.image("spike", "/Spike.png");
   }
 
   create() {
@@ -23,10 +25,54 @@ export class Level20Scene extends BaseScene {
     // Move player to the right side
     this.player.x = window.innerWidth - 200;
     this.player.y = window.innerHeight - 200;
+
+    // Track if spikes are visible
+    this.spikesVisible = false;
   }
 
   update() {
     super.update();
+
+    // Check if player is close to the second platform and make spikes visible
+    if (!this.spikesVisible && this.secondPlatform) {
+      const distanceToPlatform = Phaser.Math.Distance.Between(
+        this.player.x, this.player.y,
+        this.secondPlatform.x, this.secondPlatform.y
+      );
+
+      // Make spikes visible when player is within 300 pixels
+      if (distanceToPlatform < 300) {
+        this.spikesVisible = true;
+
+        // Make all spikes visible
+        this.spikes.forEach(spike => {
+          spike.setAlpha(1);
+        });
+
+        this.spikeColliders.forEach(collider => {
+          collider.setAlpha(1);
+        });
+
+        // Add collision detection with spikes
+        this.spikeColliders.forEach(collider => {
+          this.physics.add.overlap(this.player, collider, this.handleSpikeCollision, null, this);
+        });
+      }
+    }
+  }
+
+  handleSpikeCollision() {
+    if (!this.levelComplete) {
+      this.levelComplete = true;
+      this.player.play("death");
+      this.player.body.setVelocity(0, 0);
+      this.player.body.setAllowGravity(false);
+
+      // Restart level after death animation
+      this.player.once("animationcomplete", () => {
+        this.scene.restart();
+      });
+    }
   }
 
   createPlatforms() {
@@ -44,12 +90,40 @@ export class Level20Scene extends BaseScene {
 
     // Second platform to the left of the first platform
     const gap = 200; // Distance between platforms
+    const secondPlatformX = window.innerWidth - platformWidth / 2 - platformWidth - gap;
+    const secondPlatformY = window.innerHeight - this.groundPlatformHeight - (platformHeight + 80) / 2;
+
     this.secondPlatform = this.createPlatform(
-      window.innerWidth - platformWidth / 2 - platformWidth - gap,
-      window.innerHeight - this.groundPlatformHeight - platformHeight / 2,
+      secondPlatformX,
+      secondPlatformY,
       platformWidth,
       platformHeight + 80
     );
+
+    // Create spikes above the second platform (invisible by default)
+    this.spikes = [];
+    this.spikeColliders = [];
+
+    const spikeSpacing = 25;
+    const spikeCount = Math.floor(platformWidth / spikeSpacing);
+    const spikeY = secondPlatformY - (platformHeight + 80) / 2;
+
+    for (let i = 0; i < spikeCount; i++) {
+      const spikeX = secondPlatformX - platformWidth / 2 + (i * spikeSpacing) + spikeSpacing / 2;
+
+      const spike = this.add.image(spikeX, spikeY, "spike");
+      spike.setOrigin(0.5, 1);
+      spike.setAngle(0);
+      spike.setDepth(11);
+      spike.setAlpha(0); // Invisible by default
+      this.spikes.push(spike);
+
+      const collider = this.add.rectangle(spikeX, spikeY - 10, 10, 7);
+      collider.setDepth(10);
+      collider.setAlpha(0); // Invisible by default
+      this.physics.add.existing(collider, true);
+      this.spikeColliders.push(collider);
+    }
   }
 
   onLevelComplete() {
