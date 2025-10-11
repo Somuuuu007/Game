@@ -23,8 +23,8 @@ export class Level20Scene extends BaseScene {
     super.create();
 
     // Move player to the right side
-    this.player.x = window.innerWidth - 200;
-    this.player.y = window.innerHeight - 200;
+    this.player.x = window.innerWidth - 250;
+    this.player.y = window.innerHeight - 130;
 
     // Track if spikes are visible
     this.spikesVisible = false;
@@ -40,8 +40,11 @@ export class Level20Scene extends BaseScene {
         this.secondPlatform.x, this.secondPlatform.y
       );
 
-      // Make spikes visible when player is within 300 pixels
-      if (distanceToPlatform < 300) {
+      // Check if player is in air (not on ground platform)
+      const isInAir = this.player.y < window.innerHeight - this.groundPlatformHeight - 50;
+
+      // Make spikes visible when player is within 250 pixels AND in air
+      if (distanceToPlatform < 200 && isInAir) {
         this.spikesVisible = true;
 
         // Make all spikes visible
@@ -90,14 +93,15 @@ export class Level20Scene extends BaseScene {
 
     // Second platform to the left of the first platform
     const gap = 200; // Distance between platforms
+    const secondPlatformHeight = platformHeight + 30; // Reduced height
     const secondPlatformX = window.innerWidth - platformWidth / 2 - platformWidth - gap;
-    const secondPlatformY = window.innerHeight - this.groundPlatformHeight - (platformHeight + 80) / 2;
+    const secondPlatformY = window.innerHeight - this.groundPlatformHeight - secondPlatformHeight / 2;
 
     this.secondPlatform = this.createPlatform(
       secondPlatformX,
       secondPlatformY,
       platformWidth,
-      platformHeight + 80
+      secondPlatformHeight
     );
 
     // Create spikes above the second platform (invisible by default)
@@ -106,7 +110,7 @@ export class Level20Scene extends BaseScene {
 
     const spikeSpacing = 25;
     const spikeCount = Math.floor(platformWidth / spikeSpacing);
-    const spikeY = secondPlatformY - (platformHeight + 80) / 2;
+    const spikeY = secondPlatformY - secondPlatformHeight / 2;
 
     for (let i = 0; i < spikeCount; i++) {
       const spikeX = secondPlatformX - platformWidth / 2 + (i * spikeSpacing) + spikeSpacing / 2;
