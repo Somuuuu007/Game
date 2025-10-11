@@ -175,7 +175,7 @@ export class Level20Scene extends BaseScene {
   createPlatforms() {
     // Right side platform connected to the bottom platform
     const platformWidth = 200;
-    const platformHeight = 80;
+    const platformHeight = 70;
 
     // Create platform on the right side, connected to the ground
     this.rightPlatform = this.createPlatform(
