@@ -9,7 +9,7 @@ export class Level20Scene extends BaseScene {
     this.groundPlatformHeight = 80; // Smaller height for this level
     this.platformColor = 0x212121; // Dark color for this level
     this.levelWidth = window.innerWidth; // Single screen width for this level
-    this.doorX = window.innerWidth - 150; // Door near the end
+    this.doorX = 150; // Door on the left side
   }
 
   loadLevelAssets() {
@@ -19,6 +19,10 @@ export class Level20Scene extends BaseScene {
 
   create() {
     super.create();
+
+    // Move player to the right side
+    this.player.x = window.innerWidth - 200;
+    this.player.y = window.innerHeight - 200;
   }
 
   update() {
@@ -26,7 +30,26 @@ export class Level20Scene extends BaseScene {
   }
 
   createPlatforms() {
-    // Add Level 20 specific platforms here
+    // Right side platform connected to the bottom platform
+    const platformWidth = 200;
+    const platformHeight = 80;
+
+    // Create platform on the right side, connected to the ground
+    this.rightPlatform = this.createPlatform(
+      window.innerWidth - platformWidth / 2,
+      window.innerHeight - this.groundPlatformHeight - platformHeight / 2,
+      platformWidth,
+      platformHeight
+    );
+
+    // Second platform to the left of the first platform
+    const gap = 200; // Distance between platforms
+    this.secondPlatform = this.createPlatform(
+      window.innerWidth - platformWidth / 2 - platformWidth - gap,
+      window.innerHeight - this.groundPlatformHeight - platformHeight / 2,
+      platformWidth,
+      platformHeight + 80
+    );
   }
 
   onLevelComplete() {
