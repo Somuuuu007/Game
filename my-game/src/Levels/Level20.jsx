@@ -250,9 +250,9 @@ export class Level20Scene extends BaseScene {
     const invisibleThirdPlatformLeft = thirdPlatformX - platformWidth / 2;
     const invisibleGapWidth = invisibleThirdPlatformLeft - invisibleLeftPlatformRight;
 
-    // First floating platform (closer to third platform)
-    const floatingPlatform1X = invisibleThirdPlatformLeft - 120;
-    const floatingPlatform1Y = window.innerHeight - this.groundPlatformHeight - 180;
+    // First floating platform (closer to third platform, on the right)
+    const floatingPlatform1X = invisibleThirdPlatformLeft - 100;
+    const floatingPlatform1Y = window.innerHeight - this.groundPlatformHeight - 150;
     this.floatingPlatform1 = this.createPlatform(
       floatingPlatform1X,
       floatingPlatform1Y,
@@ -260,8 +260,8 @@ export class Level20Scene extends BaseScene {
       20
     );
 
-    // Second floating platform (closer to left platform and door)
-    const floatingPlatform2X = invisibleLeftPlatformRight + 120;
+    // Second floating platform (closer to left platform and door, on the left - higher)
+    const floatingPlatform2X = invisibleLeftPlatformRight + 100;
     const floatingPlatform2Y = window.innerHeight - this.groundPlatformHeight - this.leftPlatformHeight + 80;
     this.floatingPlatform2 = this.createPlatform(
       floatingPlatform2X,
