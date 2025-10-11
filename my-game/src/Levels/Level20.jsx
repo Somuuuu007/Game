@@ -64,7 +64,7 @@ export class Level20Scene extends BaseScene {
         });
 
         // Start timer to move platform after 5 seconds
-        this.time.delayedCall(2000, () => {
+        this.time.delayedCall(1500, () => {
           this.movePlatformToRight();
         });
       }
@@ -118,6 +118,12 @@ export class Level20Scene extends BaseScene {
             this.handlePlatformCollision();
           }
         }
+      },
+      onComplete: () => {
+        // After sliding is complete, wait 1 second then remove spikes
+        this.time.delayedCall(1000, () => {
+          this.removeSpikes();
+        });
       }
     });
   }
@@ -134,6 +140,22 @@ export class Level20Scene extends BaseScene {
         this.scene.restart();
       });
     }
+  }
+
+  removeSpikes() {
+    // Make all spikes disappear
+    this.spikes.forEach(spike => {
+      spike.destroy();
+    });
+
+    // Destroy spike colliders and remove collision
+    this.spikeColliders.forEach(collider => {
+      collider.destroy();
+    });
+
+    // Clear arrays
+    this.spikes = [];
+    this.spikeColliders = [];
   }
 
   handleSpikeCollision() {
