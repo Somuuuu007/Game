@@ -32,6 +32,13 @@ export class Level20Scene extends BaseScene {
     // Reposition door above the left platform
     this.door.y = this.doorY;
 
+    // Add collision detection for ground spikes
+    if (this.groundSpikeColliders) {
+      this.groundSpikeColliders.forEach(collider => {
+        this.physics.add.overlap(this.player, collider, this.handleSpikeCollision, null, this);
+      });
+    }
+
     // Track if spikes are visible
     this.spikesVisible = false;
     // Track if platform is moving
@@ -265,6 +272,31 @@ export class Level20Scene extends BaseScene {
       this.physics.add.existing(collider, true);
       this.spikeColliders.push(collider);
       this.spikeColliderOriginalPositions.push({ x: spikeX, y: spikeY - 10 });
+    }
+
+    // Create spikes in the gap between left platform and third platform
+    this.groundSpikes = [];
+    this.groundSpikeColliders = [];
+
+    const leftPlatformRight = this.leftPlatform.x + platformWidth / 2;
+    const thirdPlatformLeft = thirdPlatformX - platformWidth / 2;
+    const gapWidth = thirdPlatformLeft - leftPlatformRight;
+    const groundSpikeY = window.innerHeight - this.groundPlatformHeight;
+    const groundSpikeCount = Math.floor(gapWidth / spikeSpacing);
+
+    for (let i = 0; i < groundSpikeCount; i++) {
+      const spikeX = leftPlatformRight + (i * spikeSpacing) + spikeSpacing / 2;
+
+      const spike = this.add.image(spikeX, groundSpikeY, "spike");
+      spike.setOrigin(0.5, 1);
+      spike.setAngle(0);
+      spike.setDepth(11);
+      this.groundSpikes.push(spike);
+
+      const collider = this.add.rectangle(spikeX, groundSpikeY - 10, 10, 7);
+      collider.setDepth(10);
+      this.physics.add.existing(collider, true);
+      this.groundSpikeColliders.push(collider);
     }
 
     // Store gap position for ball creation
