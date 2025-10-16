@@ -51,7 +51,7 @@ export class Level1Scene extends BaseScene {
     }
   }
 
-  update() {
+  update(time, delta) {
     super.update();
 
     // Check if player has passed the rock by 50 pixels
@@ -61,12 +61,15 @@ export class Level1Scene extends BaseScene {
 
     // If rock is activated, make it follow the player
     if (this.rockActivated) {
-      const speed = 2.5;
+      // Speed in pixels per second (consistent across all frame rates)
+      // Set close to player speed (300) to maintain constant gap
+      const speed = 300;
 
       // Rock moves horizontally towards player only when moving right and player is ahead by 60px
       if (this.player.body.velocity.x > 0 && this.player.x > this.rock.x + 60) {
         // Player is moving right and is ahead, rock follows
-        this.rock.x += speed;
+        // Use delta (time since last frame in ms) to make movement frame-rate independent
+        this.rock.x += (speed * delta) / 1000;
       }
       // When player stops or moves left, rock stops
     }
